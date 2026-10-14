@@ -95,4 +95,52 @@ describe("API Uber avec PostgreSQL", () => {
       { ride: secondRide, driver: null },
     ]));
   });
+
+  it.each([
+    {},
+    { ...booking, riderId: " " },
+    { ...booking, from: " " },
+    { ...booking, to: 123 },
+    { ...booking, isUberX: "true" },
+    null,
+  ])("refuse une reservation invalide avec 400 : %j", async (body) => {
+    const response = await post("/rides", body);
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toHaveProperty("error");
+    expect(scanner.lastAddresses).toBeUndefined();
+    expect(await repository.findRidesByRider("alice")).toEqual([]);
+  });
+
+  it("refuse une annulation sans riderId avec 400", async () => {
+    const response = await post("/rides/00000000-0000-4000-8000-000000000001/cancel", {});
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toHaveProperty("error");
+  });
+
+  it("refuse un identifiant de course invalide avec 400", async () => {
+    const response = await post("/rides/pas-un-uuid/cancel", { riderId: "alice" });
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toHaveProperty("error");
+  });
+
+  it("retourne une erreur JSON pour un document JSON mal forme", async () => {
+    const response = await fetch(`${url}/rides`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{",
+    });
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "JSON invalide" });
+  });
+
+  it("retourne une erreur JSON pour une route inconnue", async () => {
+    const response = await fetch(`${url}/inconnue`);
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "Route introuvable" });
+  });
 });
