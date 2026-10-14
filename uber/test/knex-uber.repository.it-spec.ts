@@ -157,4 +157,13 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     expect(await repository.findRide("00000000-0000-4000-8000-000000000099")).toBeUndefined();
     expect(await repository.findRidesByRider("inconnu")).toEqual([]);
   });
+
+  it("saveDriver peut modifier un chauffeur sans doublon", async () => {
+    await repository.saveDriver({ id: "bob", name: "Bob" });
+
+    await repository.saveDriver({ id: "bob", name: "Robert" });
+
+    expect(await repository.findDriver("bob")).toEqual({ id: "bob", name: "Robert" });
+    expect(await database("drivers").select()).toHaveLength(1);
+  });
 });
