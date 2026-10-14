@@ -23,6 +23,10 @@ export class BookRideUsecase {
     const calculator = new CalculateRidePriceUsecase();
     const price = calculator.handle(from, to, distanceKm);
 
+    if (rider.balance < price) {
+      throw new Error("Fonds insuffisants");
+    }
+
     const ride: Ride = {
       riderId: rider.id,
       from: from,
