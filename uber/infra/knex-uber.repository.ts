@@ -1,5 +1,5 @@
 import type { Knex } from "knex";
-import type { Rider } from "../app/models";
+import type { Driver, Rider } from "../app/models";
 
 // Un repository est une classe qui range et retrouve les donnees.
 export class KnexUberRepository {
@@ -23,5 +23,9 @@ export class KnexUberRepository {
       balance: Number(row.balance),
       birthDate: row.birthDate ?? undefined,
     };
+  }
+
+  async saveDriver(driver: Driver): Promise<void> {
+    await this.database("drivers").insert(driver).onConflict("id").merge();
   }
 }
