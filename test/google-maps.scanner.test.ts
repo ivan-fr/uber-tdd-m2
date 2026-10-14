@@ -33,4 +33,33 @@ describe("Scanner les adresses avec Google Maps", () => {
       timeout: 5000,
     });
   });
+
+  it("convertit la distance Google de metres en kilometres", async () => {
+    const fetchRoute = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      routes: [{ distanceMeters: 12345 }],
+    })));
+    vi.stubGlobal("fetch", fetchRoute);
+    const scanner = new GoogleMapsScanner("test-key");
+
+    const distanceKm = await scanner.getDistance("10 rue de Rivoli, Paris", "1 place d'Armes, Versailles");
+
+    expect(distanceKm).toBe(12.345);
+    expect(fetchRoute).toHaveBeenCalledWith(
+      "https://routes.googleapis.com/directions/v2:computeRoutes",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": "test-key",
+          "X-Goog-FieldMask": "routes.distanceMeters",
+        },
+        body: JSON.stringify({
+          origin: { address: "10 rue de Rivoli, Paris" },
+          destination: { address: "1 place d'Armes, Versailles" },
+          travelMode: "DRIVE",
+        }),
+        signal: expect.any(AbortSignal),
+      },
+    );
+  });
 });
