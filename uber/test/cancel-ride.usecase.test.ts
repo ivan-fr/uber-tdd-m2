@@ -95,4 +95,16 @@ describe("Annuler une course", () => {
     expect(penalty).toBe(5);
     expect(rider.balance).toBe(15);
   });
+
+  it("refuse aussi une deuxieme annulation le jour de l'anniversaire", () => {
+    rider.birthDate = new Date(2000, 5, 14);
+    ride.driverId = "bob";
+    ride.driverOnTheWay = true;
+    usecase.handle(rider, ride, today);
+
+    expect(() => usecase.handle(rider, ride, today)).toThrow(
+      "Cette course est deja annulee",
+    );
+    expect(rider.balance).toBe(20);
+  });
 });
