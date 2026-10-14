@@ -214,4 +214,105 @@ describe("API Uber avec PostgreSQL", () => {
     expect(await response.json()).toEqual({ error: "Tarif non defini pour ce trajet" });
     expect(await repository.findRidesByRider("alice")).toEqual([]);
   });
+
+  it("permet de reserver, annuler puis reserver a nouveau via l'API", async () => {
+    const firstResponse = await post("/rides", booking);
+    expect(firstResponse.status).toBe(201);
+    const firstRide = await firstResponse.json();
+
+    const cancelResponse = await post(`/rides/${firstRide.id}/cancel`, { riderId: "alice" });
+    expect(cancelResponse.status).toBe(200);
+    expect(await cancelResponse.json()).toEqual({ penalty: 0 });
+
+    const secondResponse = await post("/rides", booking);
+    expect(secondResponse.status).toBe(201);
+    const secondRide = await secondResponse.json();
+    expect(secondRide.id).not.toBe(firstRide.id);
+
+    const historyResponse = await fetch(`${url}/riders/alice/rides`);
+    expect(historyResponse.status).toBe(200);
+    expect(await historyResponse.json()).toEqual(expect.arrayContaining([
+      { ride: { ...firstRide, cancelled: true }, driver: null },
+      { ride: secondRide, driver: null },
+    ]));
+    expect((await repository.findRider("alice"))?.balance).toBe(50);
+  });
+
+  it("retourne un historique vide si le Rider n'a aucune course", async () => {
+    const response = await fetch(`${url}/riders/alice/rides`);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual([]);
+  });
+
+  it("retourne 404 si le Rider de la reservation n'existe pas", async () => {
+    const response = await post("/rides", { ...booking, riderId: "inconnu" });
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "Rider introuvable" });
+    expect(scanner.lastAddresses).toBeUndefined();
+    expect(await database("rides").select()).toEqual([]);
+  });
+
+  it("retourne 404 si le Rider de l'annulation n'existe pas", async () => {
+    const response = await post("/rides/00000000-0000-4000-8000-000000000001/cancel", { riderId: "inconnu" });
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "Rider introuvable" });
+  });
+
+  it("retourne 404 si la course a annuler n'existe pas", async () => {
+    const response = await post("/rides/00000000-0000-4000-8000-000000000001/cancel", { riderId: "alice" });
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "Course introuvable" });
+  });
+
+  it("retourne 404 pour l'historique d'un Rider inconnu", async () => {
+    const response = await fetch(`${url}/riders/inconnu/rides`);
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "Rider introuvable" });
+  });
+
+  it.each([
+    { date: new Date(2026, 5, 14), isUberX: true, birthDate: undefined, price: 12 },
+    { date: new Date(2026, 11, 24), isUberX: true, birthDate: undefined, price: 24 },
+    { date: new Date(2026, 5, 14), isUberX: true, birthDate: new Date(2000, 5, 14), price: 7 },
+  ])("applique les tarifs UberX, Noel et anniversaire : %j", async (example) => {
+    today = example.date;
+    await repository.saveRider({ id: "alice", balance: 50, birthDate: example.birthDate });
+
+    const response = await post("/rides", { ...booking, isUberX: example.isUberX });
+    const ride = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(ride.price).toBe(example.price);
+    expect((await repository.findRide(ride.id))?.price).toBe(example.price);
+  });
+
+  it("offre l'annulation le jour de l'anniversaire", async () => {
+    await repository.saveRider({ id: "alice", balance: 50, birthDate: new Date(2000, 5, 14) });
+    const bookingResponse = await post("/rides", booking);
+    const ride = await bookingResponse.json();
+    await repository.saveDriver({ id: "bob", name: "Bob" });
+    await repository.saveRide({ ...ride, driverId: "bob", driverOnTheWay: true });
+
+    const response = await post(`/rides/${ride.id}/cancel`, { riderId: "alice" });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ penalty: 0 });
+    expect((await repository.findRider("alice"))?.balance).toBe(50);
+    expect((await repository.findRide(ride.id))?.cancelled).toBe(true);
+  });
+
+  it("retourne 500 sans exposer les details d'une erreur inattendue", async () => {
+    scanner.error = new Error("Detail interne confidentiel");
+
+    const response = await post("/rides", booking);
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "Erreur interne du serveur" });
+    expect(await repository.findRidesByRider("alice")).toEqual([]);
+  });
 });
