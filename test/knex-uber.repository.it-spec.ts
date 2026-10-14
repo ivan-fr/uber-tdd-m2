@@ -5,6 +5,7 @@ import type { Ride } from "../app/models";
 import { BookRideUsecase } from "../app/book-ride.usecase";
 import { CancelRideUsecase } from "../app/cancel-ride.usecase";
 import { ListRiderRideHistoryUsecase } from "../app/list-rides-history.usecase";
+import { StubRouteScanner } from "./stub-route.scanner";
 
 describe("Stocker les donnees Uber dans PostgreSQL", () => {
   let repository: KnexUberRepository;
@@ -263,5 +264,24 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
     expect(await repository.findRider("alice")).toBeUndefined();
     expect(await repository.findRidesByRider("alice")).toEqual([]);
+  });
+
+  it("sauvegarde les adresses et la distance du scanner avec un prix au centime", async () => {
+    const rider = { id: "alice", balance: 20 };
+    const scanner = new StubRouteScanner();
+    scanner.result = { fromCity: "Paris", toCity: "Paris", distanceKm: 1.235 };
+
+    const bookedRide = await new BookRideUsecase(repository).handleFromAddresses(
+      rider,
+      "10 rue de Rivoli, Paris",
+      "20 avenue des Champs-Elysees, Paris",
+      scanner,
+      false,
+      today,
+    );
+
+    expect(bookedRide.price).toBe(2.62);
+    expect(bookedRide.distanceKm).toBe(1.235);
+    expect(await repository.findRide(bookedRide.id)).toEqual(bookedRide);
   });
 });
