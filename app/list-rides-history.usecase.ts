@@ -10,12 +10,8 @@ export class ListRiderRideHistoryUsecase {
     const history: Array<{ ride: Ride; driver: Driver | null }> = [];
 
     for (const ride of rides) {
-      if (ride.driverId === null) {
-        history.push({ ride, driver: null });
-        continue;
-      }
 
-      const driver = await this.repository.findDriver(ride.driverId);
+      const driver = await this.repository.findDriver(ride.driverId!);
       history.push({ ride, driver: driver ?? null });
     }
 

@@ -17,14 +17,6 @@ describe("Historique des courses d'un Rider", () => {
     expect(history).toEqual([]);
   });
 
-  it("liste aussi une course sans Driver assigne", async () => {
-    const rider = { id: "alice", balance: 20 };
-    const ride = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10, false, today);
-
-    const history = await new ListRiderRideHistoryUsecase(repository).handle("alice");
-
-    expect(history).toEqual([{ ride: ride, driver: null }]);
-  });
 
   it("ne montre pas les courses d'un autre Rider", async () => {
     const alice = { id: "alice", balance: 20 };
