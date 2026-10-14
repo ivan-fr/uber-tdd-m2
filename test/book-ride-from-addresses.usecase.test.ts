@@ -44,6 +44,14 @@ describe("Reserver une course avec deux adresses", () => {
     expect(repository.rides).toEqual([firstRide]);
   });
 
+  it("cumule le prix scanne avec UberX et Noel", async () => {
+    const rider = { id: "alice", balance: 40 };
+
+    const ride = await usecase.handleFromAddresses(rider, from, to, scanner, true, new Date(2026, 11, 25));
+
+    expect(ride.price).toBe(24);
+  });
+
   beforeEach(() => {
     repository = new FakeUberRepository();
     scanner = new StubRouteScanner();
