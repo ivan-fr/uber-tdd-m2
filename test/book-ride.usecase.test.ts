@@ -115,4 +115,14 @@ describe("Reserver une course", () => {
     expect(ride.price).toBe(15);
     expect(repository.rides).toEqual([ride]);
   });
+
+  it("refuse UberX a Noel si le Rider a moins de 40 euros", async () => {
+    const rider = { id: "alice", balance: 39 };
+
+    await expect(usecase.handle(rider, "Paris", "Lyon", 10, true, new Date(2026, 11, 25))).rejects.toThrow(
+      "Fonds insuffisants",
+    );
+
+    expect(repository.rides).toEqual([]);
+  });
 });
