@@ -9,3 +9,7 @@ reports
 test-results
 playwright-report
 .env
+/.idea/.gitignore
+/.idea/modules.xml
+/.idea/uber-tdd-m2.iml
+/.idea/vcs.xml
