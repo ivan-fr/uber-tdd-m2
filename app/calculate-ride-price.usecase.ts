@@ -28,12 +28,12 @@ export class CalculateRidePriceUsecase {
       riderBirthDate.getDate() === today.getDate() &&
       riderBirthDate.getMonth() === today.getMonth();
 
-    if (isChristmasEve || isChristmasDay) {
-      price = price * 2;
-    }
-
     if (isUberX && !isBirthday) {
       price = price + 5;
+    }
+
+    if (isChristmasEve || isChristmasDay) {
+      price = price * 2;
     }
 
     return price;
