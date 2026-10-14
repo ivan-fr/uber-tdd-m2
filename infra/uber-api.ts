@@ -1,4 +1,5 @@
 import express from "express";
+import type { ErrorRequestHandler } from "express";
 import type { UberRepository } from "../app/uber.repository";
 import type { RouteScanner } from "../app/route.scanner";
 import { BookRideUsecase } from "../app/book-ride.usecase";
@@ -14,7 +15,12 @@ export function createUberApi(
   api.use(express.json());
 
   api.post("/rides", async (request, response) => {
-    const { riderId, from, to, isUberX = false } = request.body;
+    const { riderId, from, to, isUberX = false } = request.body ?? {};
+    if (!isText(riderId) || !isText(from) || !isText(to) || typeof isUberX !== "boolean") {
+      response.status(400).json({ error: "riderId, from et to sont obligatoires ; isUberX doit etre un booleen" });
+      return;
+    }
+
     const rider = await repository.findRider(riderId);
     if (!rider) {
       response.status(404).json({ error: "Rider introuvable" });
@@ -28,13 +34,21 @@ export function createUberApi(
   });
 
   api.post("/rides/:id/cancel", async (request, response) => {
-    const rider = await repository.findRider(request.body.riderId);
+    const { riderId } = request.body ?? {};
+    const rideId = request.params.id;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rideId);
+    if (!isText(riderId) || !isUuid) {
+      response.status(400).json({ error: "riderId et un identifiant de course valide sont obligatoires" });
+      return;
+    }
+
+    const rider = await repository.findRider(riderId);
     if (!rider) {
       response.status(404).json({ error: "Rider introuvable" });
       return;
     }
 
-    const ride = await repository.findRide(request.params.id);
+    const ride = await repository.findRide(rideId);
     if (!ride) {
       response.status(404).json({ error: "Course introuvable" });
       return;
@@ -55,5 +69,22 @@ export function createUberApi(
     response.json(history);
   });
 
+  api.use((_request, response) => {
+    response.status(404).json({ error: "Route introuvable" });
+  });
+
+  const handleError: ErrorRequestHandler = (error, _request, response, _next) => {
+    if (error instanceof SyntaxError && "body" in error) {
+      response.status(400).json({ error: "JSON invalide" });
+      return;
+    }
+    response.status(500).json({ error: "Erreur interne du serveur" });
+  };
+  api.use(handleError);
+
   return api;
+}
+
+function isText(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }
