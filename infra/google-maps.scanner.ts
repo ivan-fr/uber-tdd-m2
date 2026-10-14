@@ -1,9 +1,18 @@
 import { AddressType, Client, Status } from "@googlemaps/google-maps-services-js";
+import type { RouteScanner, ScannedRoute } from "../app/route.scanner";
 
-export class GoogleMapsScanner {
+export class GoogleMapsScanner implements RouteScanner {
   private client = new Client({});
 
   constructor(private apiKey: string) {}
+
+  async scan(fromAddress: string, toAddress: string): Promise<ScannedRoute> {
+    const fromCity = await this.getCity(fromAddress);
+    const toCity = await this.getCity(toAddress);
+    const distanceKm = await this.getDistance(fromAddress, toAddress);
+
+    return { fromCity: fromCity, toCity: toCity, distanceKm: distanceKm };
+  }
 
   async getCity(address: string): Promise<string> {
     try {
