@@ -7,11 +7,15 @@ export class KnexUberRepository implements UberRepository {
   constructor(private database: Knex) {}
 
   async saveRider(rider: Rider): Promise<void> {
-    await this.database("riders").insert({
-      id: rider.id,
-      balance: rider.balance,
-      birthDate: rider.birthDate ?? null,
-    }).onConflict("id").merge();
+    // Si cet id existe deja, merge met a jour la ligne au lieu de la dupliquer.
+    await this.database("riders")
+      .insert({
+        id: rider.id,
+        balance: rider.balance,
+        birthDate: rider.birthDate ?? null,
+      })
+      .onConflict("id")
+      .merge();
   }
 
   async findRider(id: string): Promise<Rider | undefined> {
