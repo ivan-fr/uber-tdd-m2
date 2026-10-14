@@ -10,7 +10,7 @@ export class KnexUberRepository {
       id: rider.id,
       balance: rider.balance,
       birthDate: rider.birthDate ?? null,
-    });
+    }).onConflict("id").merge();
   }
 
   async findRider(id: string): Promise<Rider | undefined> {
