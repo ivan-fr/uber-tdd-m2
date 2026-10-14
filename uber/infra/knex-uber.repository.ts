@@ -36,4 +36,15 @@ export class KnexUberRepository {
   async saveRide(ride: Ride): Promise<void> {
     await this.database("rides").insert(ride).onConflict("id").merge();
   }
+
+  async findRide(id: string): Promise<Ride | undefined> {
+    const row = await this.database("rides").where({ id: id }).first();
+    if (!row) return undefined;
+
+    return {
+      ...row,
+      distanceKm: Number(row.distanceKm),
+      price: Number(row.price),
+    };
+  }
 }
