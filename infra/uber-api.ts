@@ -78,6 +78,23 @@ export function createUberApi(
       response.status(400).json({ error: "JSON invalide" });
       return;
     }
+
+    const statuses: Record<string, number> = {
+      "Fonds insuffisants": 409,
+      "Une reservation attend deja un Driver": 409,
+      "Cette course est deja annulee": 409,
+      "Cette course appartient a un autre Rider": 403,
+      "Tarif non defini pour ce trajet": 422,
+      "Impossible de retrouver la ville de cette adresse": 502,
+      "Impossible de calculer la distance du trajet": 502,
+    };
+    if (error instanceof Error) {
+      const status = statuses[error.message];
+      if (typeof status === "number") {
+        response.status(status).json({ error: error.message });
+        return;
+      }
+    }
     response.status(500).json({ error: "Erreur interne du serveur" });
   };
   api.use(handleError);
