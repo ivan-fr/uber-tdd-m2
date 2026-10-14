@@ -47,4 +47,13 @@ export class KnexUberRepository {
       price: Number(row.price),
     };
   }
+
+  async findRidesByRider(riderId: string): Promise<Ride[]> {
+    const rows = await this.database("rides").where({ riderId: riderId }).orderBy("id");
+    return rows.map((row) => ({
+      ...row,
+      distanceKm: Number(row.distanceKm),
+      price: Number(row.price),
+    }));
+  }
 }
