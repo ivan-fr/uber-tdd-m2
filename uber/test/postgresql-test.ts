@@ -9,7 +9,6 @@ export let database: Knex;
 let container: StartedTestContainer;
 
 beforeAll(async () => {
-  // Docker cree une base vide, reservee a cette execution des tests.
   container = await new GenericContainer("postgres:16")
     .withEnvironment({
       POSTGRES_USER: "uber",
@@ -38,7 +37,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // On ferme la connexion, puis on supprime seulement le conteneur de test.
   if (database) await database.destroy();
   if (container) await container.stop();
 });

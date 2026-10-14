@@ -1,7 +1,3 @@
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 exports.up = async function(knex) {
   await knex.schema.createTable("riders", (table) => {
     table.string("id").primary();
@@ -27,12 +23,7 @@ exports.up = async function(knex) {
   });
 };
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 exports.down = async function(knex) {
-  // On supprime d'abord les courses, car elles referencent les autres tables.
   await knex.schema.dropTable("rides");
   await knex.schema.dropTable("drivers");
   await knex.schema.dropTable("riders");

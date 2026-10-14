@@ -13,13 +13,10 @@ describe("Reserver une course", () => {
   });
 
   it("cree une reservation quand le Rider a assez d'argent", async () => {
-    // GIVEN : Alice a 20 euros sur son compte.
     const rider = { id: "alice", balance: 20 };
 
-    // WHEN : elle reserve une course de 10 km dans Paris.
     const ride = await usecase.handle(rider, "Paris", "Paris", 10);
 
-    // THEN : la reservation coute 7 euros et attend un Driver.
     expect(ride).toEqual({
       id: ride.id,
       riderId: "alice",
@@ -37,7 +34,6 @@ describe("Reserver une course", () => {
   it("refuse la reservation quand le Rider n'a pas assez d'argent", async () => {
     const rider = { id: "alice", balance: 6 };
 
-    // La course coute 7 euros, mais Alice n'a que 6 euros.
     await expect(usecase.handle(rider, "Paris", "Paris", 10)).rejects.toThrow(
       "Fonds insuffisants",
     );

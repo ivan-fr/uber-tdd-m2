@@ -10,7 +10,6 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
   let ride: Ride;
 
   beforeEach(async () => {
-    // On vide seulement les tables du conteneur de test.
     await database("rides").delete();
     await database("drivers").delete();
     await database("riders").delete();

@@ -2,12 +2,10 @@ import type { Knex } from "knex";
 import type { Driver, Ride, Rider } from "../app/models";
 import type { UberRepository } from "../app/uber.repository";
 
-// Un repository est une classe qui range et retrouve les donnees.
 export class KnexUberRepository implements UberRepository {
   constructor(private database: Knex) {}
 
   async saveRider(rider: Rider): Promise<void> {
-    // Si cet id existe deja, merge met a jour la ligne au lieu de la dupliquer.
     await this.database("riders")
       .insert({
         id: rider.id,
@@ -24,7 +22,6 @@ export class KnexUberRepository implements UberRepository {
 
     return {
       id: row.id,
-      // PostgreSQL renvoie les decimaux en texte : Number les convertit.
       balance: Number(row.balance),
       birthDate: row.birthDate ?? undefined,
     };

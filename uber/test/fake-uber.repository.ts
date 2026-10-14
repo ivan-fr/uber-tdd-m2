@@ -1,7 +1,6 @@
 import type { Driver, Ride, Rider } from "../app/models";
 import type { UberRepository } from "../app/uber.repository";
 
-// Dans les tests unitaires, des tableaux remplacent PostgreSQL.
 export class FakeUberRepository implements UberRepository {
   public riders: Rider[] = [];
   public drivers: Driver[] = [];

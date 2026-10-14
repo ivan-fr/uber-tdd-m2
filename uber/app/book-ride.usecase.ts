@@ -15,10 +15,8 @@ export class BookRideUsecase {
       throw new Error("Fonds insuffisants");
     }
 
-    // On regarde les anciennes reservations de ce Rider.
     const existingRides = await this.repository.findRidesByRider(rider.id);
     for (const existingRide of existingRides) {
-      // Les trois conditions doivent etre vraies pour bloquer la reservation.
       if (
         existingRide.riderId === rider.id &&
         existingRide.cancelled === false &&
@@ -28,7 +26,6 @@ export class BookRideUsecase {
       }
     }
 
-    // Tout est bon : on cree la course, puis on la sauvegarde.
     const ride: Ride = {
       id: randomUUID(),
       riderId: rider.id,
