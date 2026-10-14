@@ -27,6 +27,12 @@ export class BookRideUsecase {
       throw new Error("Fonds insuffisants");
     }
 
+    for (const existingRide of this.rides) {
+      if (existingRide.riderId === rider.id) {
+        throw new Error("Une reservation attend deja un Driver");
+      }
+    }
+
     const ride: Ride = {
       riderId: rider.id,
       from: from,
