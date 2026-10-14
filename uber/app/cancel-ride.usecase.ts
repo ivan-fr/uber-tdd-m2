@@ -2,6 +2,10 @@ import type { Ride, Rider } from "./book-ride.usecase";
 
 export class CancelRideUsecase {
   handle(rider: Rider, ride: Ride, today: Date): number {
+    if (ride.riderId !== rider.id) {
+      throw new Error("Cette course appartient a un autre Rider");
+    }
+
     if (ride.cancelled === true) {
       throw new Error("Cette course est deja annulee");
     }
