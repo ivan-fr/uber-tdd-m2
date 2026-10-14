@@ -4,7 +4,9 @@ import type { RouteScanner, ScannedRoute } from "../app/route.scanner";
 export class GoogleMapsScanner implements RouteScanner {
   private client = new Client({});
 
-  constructor(private apiKey: string) {}
+  constructor(private apiKey: string) {
+    if (!apiKey.trim()) throw new Error("Cle Google Maps manquante");
+  }
 
   async scan(fromAddress: string, toAddress: string): Promise<ScannedRoute> {
     const fromCity = await this.getCity(fromAddress);
