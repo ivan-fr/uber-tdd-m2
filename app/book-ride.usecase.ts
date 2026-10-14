@@ -18,6 +18,10 @@ export class BookRideUsecase {
     const calculator = new CalculateRidePriceUsecase();
     const price = calculator.handle(from, to, distanceKm, today, isUberX, rider.birthDate);
 
+    return this.saveRide(rider, from, to, distanceKm, price);
+  }
+
+  private async saveRide(rider: Rider, from: string, to: string, distanceKm: number, price: number): Promise<Ride> {
     if (rider.balance < price) {
       throw new Error("Fonds insuffisants");
     }
