@@ -40,6 +40,18 @@ describe("Annuler une course", () => {
     expect(ride.cancelled).toBe(true);
   });
 
+  it("offre l'annulation le jour de l'anniversaire meme si le Driver est en chemin", () => {
+    rider.birthDate = new Date(2000, 5, 14);
+    ride.driverId = "bob";
+    ride.driverOnTheWay = true;
+
+    const penalty = usecase.handle(rider, ride, today);
+
+    expect(penalty).toBe(0);
+    expect(rider.balance).toBe(20);
+    expect(ride.cancelled).toBe(true);
+  });
+
   it("refuse une deuxieme annulation sans retirer encore de l'argent", () => {
     ride.driverId = "bob";
     ride.driverOnTheWay = true;
