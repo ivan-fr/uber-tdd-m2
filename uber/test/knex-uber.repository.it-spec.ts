@@ -211,4 +211,15 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     expect((await repository.findRider("alice"))?.balance).toBe(20);
     expect((await repository.findRide(bookedRide.id))?.cancelled).toBe(true);
   });
+
+  it("une reservation refusee ne laisse pas de donnees en base", async () => {
+    const rider = { id: "alice", balance: 6 };
+
+    await expect(new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10)).rejects.toThrow(
+      "Fonds insuffisants",
+    );
+
+    expect(await repository.findRider("alice")).toBeUndefined();
+    expect(await repository.findRidesByRider("alice")).toEqual([]);
+  });
 });
