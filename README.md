@@ -1,4 +1,4 @@
-# Projet Uber : stories 1 a 6
+# Projet Uber : stories 1 a 7
 
 Le code Uber se trouve a la racine de ce depot. La story 3 enregistre les passagers
 (`riders`), les chauffeurs (`drivers`) et les courses (`rides`) dans PostgreSQL.
@@ -66,3 +66,36 @@ const ride = await bookRide.handle(rider, "Paris", "Lyon", 10, true, new Date(20
 
 Sans ce parametre, la reservation utilise la date du jour. Les tests passent
 toujours une date fixe pour donner le meme resultat quel que soit le jour d'execution.
+
+### Story 7 : Google Maps
+
+`GoogleMapsScanner` retrouve la ville de chaque adresse et la distance routiere.
+Il utilise `@googlemaps/google-maps-services-js` pour Geocoding API et un appel
+HTTP a Routes API pour la distance. Routes remplace l'ancienne Distance Matrix API.
+
+La cle doit avoir Geocoding API et Routes API actives. Elle se trouve uniquement
+dans le fichier local `.env`, ignore par Git, sous le nom `GOOGLE_MAPS_API_KEY`.
+Le fichier `.env.example` montre le nom de la variable sans contenir de cle.
+
+Avec Node.js 22 ou plus, lancer le scanner depuis la racine du depot :
+
+```bash
+npm run scan -- "10 rue de Rivoli, Paris, France" "20 avenue des Champs-Elysees, Paris, France"
+```
+
+La commande affiche les deux villes et la distance en kilometres.
+
+Pour reserver depuis les adresses, utiliser `handleFromAddresses` :
+
+```ts
+const scanner = new GoogleMapsScanner(process.env.GOOGLE_MAPS_API_KEY ?? "");
+const ride = await bookRide.handleFromAddresses(rider, fromAddress, toAddress, scanner);
+```
+
+Cette methode calcule le prix avec les villes retournees par Google, arrondit
+le montant au centime, applique les regles habituelles et sauvegarde les adresses.
+Les tests utilisent `StubRouteScanner` et des reponses Google simulees :
+ils ne necessitent aucune cle et ne font aucun appel Google.
+
+Documentation officielle : [Geocoding](https://developers.google.com/maps/documentation/geocoding/requests-geocoding)
+et [Routes](https://developers.google.com/maps/documentation/routes/compute_route_directions).
