@@ -62,4 +62,17 @@ describe("Scanner les adresses avec Google Maps", () => {
       },
     );
   });
+
+  it("retourne les deux villes et la distance du trajet", async () => {
+    const scanner = new GoogleMapsScanner("test-key");
+    const getCity = vi.spyOn(scanner, "getCity").mockResolvedValueOnce("Paris").mockResolvedValueOnce("Versailles");
+    const getDistance = vi.spyOn(scanner, "getDistance").mockResolvedValue(12.345);
+
+    const route = await scanner.scan("10 rue de Rivoli, Paris", "1 place d'Armes, Versailles");
+
+    expect(route).toEqual({ fromCity: "Paris", toCity: "Versailles", distanceKm: 12.345 });
+    expect(getCity).toHaveBeenNthCalledWith(1, "10 rue de Rivoli, Paris");
+    expect(getCity).toHaveBeenNthCalledWith(2, "1 place d'Armes, Versailles");
+    expect(getDistance).toHaveBeenCalledWith("10 rue de Rivoli, Paris", "1 place d'Armes, Versailles");
+  });
 });
