@@ -28,7 +28,11 @@ export class BookRideUsecase {
     }
 
     for (const existingRide of this.rides) {
-      if (existingRide.riderId === rider.id && existingRide.cancelled === false) {
+      if (
+        existingRide.riderId === rider.id &&
+        existingRide.cancelled === false &&
+        existingRide.driverId === null
+      ) {
         throw new Error("Une reservation attend deja un Driver");
       }
     }
