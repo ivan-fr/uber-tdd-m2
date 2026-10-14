@@ -54,4 +54,18 @@ describe("Reserver une course", () => {
     );
     expect(usecase.rides).toEqual([firstRide]);
   });
+
+  it("autorise une nouvelle reservation apres l'annulation de la precedente", () => {
+    const usecase = new BookRideUsecase();
+    const rider = { id: "alice", balance: 20 };
+    const firstRide = usecase.handle(rider, "Paris", "Paris", 10);
+    // On prepare une course deja annulee. Les regles d'annulation sont en story 2.
+    firstRide.cancelled = true;
+
+    const secondRide = usecase.handle(rider, "Paris", "Lyon", 10);
+
+    expect(secondRide.price).toBe(15);
+    expect(secondRide.cancelled).toBe(false);
+    expect(usecase.rides).toEqual([firstRide, secondRide]);
+  });
 });
