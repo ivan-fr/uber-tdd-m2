@@ -80,6 +80,21 @@ describe("Calculer le prix d'une course", () => {
     expect(price).toBe(15);
   });
 
+  it("offre UberX a l'anniversaire meme quand Noel double la course", () => {
+    const usecase = new CalculateRidePriceUsecase();
+
+    const price = usecase.handle(
+      "Paris",
+      "Lyon",
+      10,
+      new Date(2026, 11, 25),
+      true,
+      new Date(2000, 11, 25),
+    );
+
+    expect(price).toBe(30);
+  });
+
   it("refuse un trajet exterieur vers exterieur car le sujet ne donne pas son tarif", () => {
     const usecase = new CalculateRidePriceUsecase();
 
