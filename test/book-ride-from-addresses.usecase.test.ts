@@ -52,6 +52,14 @@ describe("Reserver une course avec deux adresses", () => {
     expect(ride.price).toBe(24);
   });
 
+  it("offre toujours UberX le jour de lanniversaire", async () => {
+    const rider = { id: "alice", balance: 20, birthDate: new Date(2000, 5, 14) };
+
+    const ride = await usecase.handleFromAddresses(rider, from, to, scanner, true, today);
+
+    expect(ride.price).toBe(7);
+  });
+
   beforeEach(() => {
     repository = new FakeUberRepository();
     scanner = new StubRouteScanner();
