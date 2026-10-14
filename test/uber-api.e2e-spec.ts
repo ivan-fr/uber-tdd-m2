@@ -73,4 +73,26 @@ describe("API Uber avec PostgreSQL", () => {
     expect((await repository.findRide(ride.id))?.cancelled).toBe(true);
     expect((await repository.findRider("alice"))?.balance).toBe(45);
   });
+
+  it("GET /riders/:id/rides liste les courses avec leurs chauffeurs", async () => {
+    const firstResponse = await post("/rides", booking);
+    const firstRide = await firstResponse.json();
+    const driver = { id: "bob", name: "Bob" };
+    await repository.saveDriver(driver);
+    await repository.saveRide({ ...firstRide, driverId: "bob" });
+    const secondResponse = await post("/rides", booking);
+    const secondRide = await secondResponse.json();
+    await repository.saveRider({ id: "chloe", balance: 50 });
+    await post("/rides", { ...booking, riderId: "chloe" });
+
+    const response = await fetch(`${url}/riders/alice/rides`);
+    const history = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(history).toHaveLength(2);
+    expect(history).toEqual(expect.arrayContaining([
+      { ride: { ...firstRide, driverId: "bob" }, driver },
+      { ride: secondRide, driver: null },
+    ]));
+  });
 });
