@@ -53,6 +53,17 @@ describe("Calculer le prix d'une course", () => {
     expect(price).toBe(20);
   });
 
+  it.each([
+    new Date(2026, 11, 24),
+    new Date(2026, 11, 25),
+  ])("double aussi le supplement UberX a Noel (%s)", (date) => {
+    const usecase = new CalculateRidePriceUsecase();
+
+    const price = usecase.handle("Paris", "Lyon", 10, date, true);
+
+    expect(price).toBe(40);
+  });
+
   it("offre le supplement UberX le jour de l'anniversaire du Rider", () => {
     const usecase = new CalculateRidePriceUsecase();
     const riderBirthDate = new Date(2000, 5, 14);
