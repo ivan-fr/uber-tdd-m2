@@ -1,9 +1,12 @@
 import type { Ride, Rider } from "./models";
+import type { UberRepository } from "./uber.repository";
 
 export class CancelRideUsecase {
+  constructor(private repository: UberRepository) {}
+
   // On donne la date du jour en parametre pour pouvoir la choisir dans les tests.
   // Le nombre retourne est la penalite : 0 ou 5 euros.
-  handle(rider: Rider, ride: Ride, today: Date): number {
+  async handle(rider: Rider, ride: Ride, today: Date): Promise<number> {
     // On verifie d'abord que l'annulation est autorisee.
     if (ride.riderId !== rider.id) {
       throw new Error("Cette course appartient a un autre Rider");
@@ -31,6 +34,8 @@ export class CancelRideUsecase {
     // On retire la penalite du compte et on annule la course.
     rider.balance = rider.balance - penalty;
     ride.cancelled = true;
+    await this.repository.saveRider(rider);
+    await this.repository.saveRide(ride);
     return penalty;
   }
 }

@@ -66,7 +66,7 @@ describe("Reserver une course", () => {
   it("autorise une nouvelle reservation apres l'annulation de la precedente", async () => {
     const rider = { id: "alice", balance: 20 };
     const firstRide = await usecase.handle(rider, "Paris", "Paris", 10);
-    new CancelRideUsecase().handle(rider, firstRide, new Date(2026, 5, 14));
+    await new CancelRideUsecase(repository).handle(rider, firstRide, new Date(2026, 5, 14));
 
     const secondRide = await usecase.handle(rider, "Paris", "Lyon", 10);
 
