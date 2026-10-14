@@ -14,6 +14,7 @@ export interface Ride {
   distanceKm: number;
   price: number;
   driverId: string | null;
+  driverOnTheWay: boolean;
   cancelled: boolean;
 }
 
@@ -49,6 +50,7 @@ export class BookRideUsecase {
       distanceKm: distanceKm,
       price: price,
       driverId: null,
+      driverOnTheWay: false,
       cancelled: false,
     };
 
