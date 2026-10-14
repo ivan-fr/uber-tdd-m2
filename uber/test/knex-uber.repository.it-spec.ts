@@ -60,4 +60,12 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     await database.migrate.latest();
     expect(await database.schema.hasTable("rides")).toBe(true);
   });
+
+  it("saveDriver enregistre un chauffeur", async () => {
+    const driver = { id: "bob", name: "Bob" };
+
+    await repository.saveDriver(driver);
+
+    expect(await database("drivers").where({ id: "bob" }).first()).toEqual(driver);
+  });
 });
