@@ -32,6 +32,15 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     });
   });
 
+  it("findRider retrouve un Rider avec un solde sous forme de nombre", async () => {
+    const rider = { id: "alice", balance: 20.5, birthDate: new Date(2000, 5, 14) };
+    await database("riders").insert(rider);
+
+    const savedRider = await repository.findRider("alice");
+
+    expect(savedRider).toEqual(rider);
+  });
+
   it("la migration peut etre annulee puis reappliquee", async () => {
     await database.migrate.rollback();
 
