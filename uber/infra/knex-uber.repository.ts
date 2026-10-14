@@ -1,5 +1,5 @@
 import type { Knex } from "knex";
-import type { Rider } from "../app/book-ride.usecase";
+import type { Rider } from "../app/models";
 
 // Un repository est une classe qui range et retrouve les donnees.
 export class KnexUberRepository {

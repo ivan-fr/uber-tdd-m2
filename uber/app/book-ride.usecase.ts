@@ -1,24 +1,6 @@
 import { CalculateRidePriceUsecase } from "./calculate-ride-price.usecase";
 
-// Ces interfaces decrivent simplement les informations de nos objets.
-// Un Rider est un passager ; un Ride est une course.
-export interface Rider {
-  id: string;
-  balance: number;
-  // Le ? signifie que la date de naissance peut ne pas etre renseignee.
-  birthDate?: Date;
-}
-
-export interface Ride {
-  riderId: string;
-  from: string;
-  to: string;
-  distanceKm: number;
-  price: number;
-  driverId: string | null;
-  driverOnTheWay: boolean;
-  cancelled: boolean;
-}
+import type { Ride, Rider } from "./models";
 
 export class BookRideUsecase {
   // Pour cette story, les reservations restent dans un simple tableau.

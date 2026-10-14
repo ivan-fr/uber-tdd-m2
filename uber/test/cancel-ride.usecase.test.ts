@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { BookRideUsecase } from "../app/book-ride.usecase";
-import type { Ride, Rider } from "../app/book-ride.usecase";
+import type { Ride, Rider } from "../app/models";
 import { CancelRideUsecase } from "../app/cancel-ride.usecase";
 
 describe("Annuler une course", () => {

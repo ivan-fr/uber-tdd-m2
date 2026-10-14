@@ -1,4 +1,4 @@
-import type { Ride, Rider } from "./book-ride.usecase";
+import type { Ride, Rider } from "./models";
 
 export class CancelRideUsecase {
   // On donne la date du jour en parametre pour pouvoir la choisir dans les tests.
