@@ -1,5 +1,7 @@
 import { CalculateRidePriceUsecase } from "./calculate-ride-price.usecase";
 
+// Ces interfaces decrivent simplement les informations de nos objets.
+// Un Rider est un passager ; un Ride est une course.
 export interface Rider {
   id: string;
   balance: number;
@@ -27,7 +29,9 @@ export class BookRideUsecase {
       throw new Error("Fonds insuffisants");
     }
 
+    // On regarde les anciennes reservations de ce Rider.
     for (const existingRide of this.rides) {
+      // Les trois conditions doivent etre vraies pour bloquer la reservation.
       if (
         existingRide.riderId === rider.id &&
         existingRide.cancelled === false &&
@@ -37,6 +41,7 @@ export class BookRideUsecase {
       }
     }
 
+    // Tout est bon : on cree la course, puis on la garde dans le tableau.
     const ride: Ride = {
       riderId: rider.id,
       from: from,
