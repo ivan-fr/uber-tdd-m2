@@ -36,6 +36,14 @@ describe("Reserver une course avec deux adresses", () => {
     expect(repository.rides).toEqual([]);
   });
 
+  it("refuse une seconde reservation scannee en attente", async () => {
+    const rider = { id: "alice", balance: 20 };
+    const firstRide = await usecase.handleFromAddresses(rider, from, to, scanner, false, today);
+
+    await expect(usecase.handleFromAddresses(rider, from, to, scanner, false, today)).rejects.toThrow("Une reservation attend deja un Driver");
+    expect(repository.rides).toEqual([firstRide]);
+  });
+
   beforeEach(() => {
     repository = new FakeUberRepository();
     scanner = new StubRouteScanner();
