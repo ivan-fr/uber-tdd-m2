@@ -33,4 +33,14 @@ describe("Reserver une course", () => {
     );
     expect(usecase.rides).toEqual([]);
   });
+
+  it("accepte la reservation avec exactement le montant necessaire", () => {
+    const usecase = new BookRideUsecase();
+    const rider = { id: "alice", balance: 7 };
+
+    const ride = usecase.handle(rider, "Paris", "Paris", 10);
+
+    expect(ride.price).toBe(7);
+    expect(usecase.rides).toEqual([ride]);
+  });
 });
