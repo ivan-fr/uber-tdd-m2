@@ -199,6 +199,21 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     expect((await repository.findRide(bookedRide.id))?.cancelled).toBe(true);
   });
 
+  it("le service UberX est offert le jour de l'anniversaire du Rider", async () => {
+    const rider = { id: "alice", balance: 20, birthDate: new Date(2000, 5, 14) };
+
+    const bookedRide = await new BookRideUsecase(repository).handle(
+      rider,
+      "Paris",
+      "Lyon",
+      10,
+      true,
+    );
+
+    expect(bookedRide.price).toBe(15);
+    expect(await repository.findRide(bookedRide.id))?.price.toBe(15);
+  });
+
   it("une reservation refusee ne laisse pas de donnees en base", async () => {
     const rider = { id: "alice", balance: 6 };
 

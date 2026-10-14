@@ -7,9 +7,15 @@ import type { UberRepository } from "./uber.repository";
 export class BookRideUsecase {
   constructor(private repository: UberRepository) {}
 
-  async handle(rider: Rider, from: string, to: string, distanceKm: number): Promise<Ride> {
+  async handle(
+    rider: Rider,
+    from: string,
+    to: string,
+    distanceKm: number,
+    isUberX: boolean = false,
+  ): Promise<Ride> {
     const calculator = new CalculateRidePriceUsecase();
-    const price = calculator.handle(from, to, distanceKm, new Date());
+    const price = calculator.handle(from, to, distanceKm, new Date(), isUberX, rider.birthDate);
 
     if (rider.balance < price) {
       throw new Error("Fonds insuffisants");

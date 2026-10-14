@@ -45,6 +45,30 @@ describe("Calculer le prix d'une course", () => {
     expect(price).toBe(expected);
   });
 
+  it("ajoute 5 euros pour un service UberX standard", () => {
+    const usecase = new CalculateRidePriceUsecase();
+
+    const price = usecase.handle("Paris", "Lyon", 10, new Date(2026, 5, 14), true);
+
+    expect(price).toBe(20);
+  });
+
+  it("offre le supplement UberX le jour de l'anniversaire du Rider", () => {
+    const usecase = new CalculateRidePriceUsecase();
+    const riderBirthDate = new Date(2000, 5, 14);
+
+    const price = usecase.handle(
+      "Paris",
+      "Lyon",
+      10,
+      new Date(2026, 5, 14),
+      true,
+      riderBirthDate,
+    );
+
+    expect(price).toBe(15);
+  });
+
   it("refuse un trajet exterieur vers exterieur car le sujet ne donne pas son tarif", () => {
     const usecase = new CalculateRidePriceUsecase();
 
