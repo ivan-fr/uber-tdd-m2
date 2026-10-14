@@ -143,4 +143,75 @@ describe("API Uber avec PostgreSQL", () => {
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: "Route introuvable" });
   });
+
+  it("refuse une reservation sans fonds avec 409 et sans creer de course", async () => {
+    await repository.saveRider({ id: "alice", balance: 6 });
+
+    const response = await post("/rides", booking);
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "Fonds insuffisants" });
+    expect(await repository.findRidesByRider("alice")).toEqual([]);
+    expect((await repository.findRider("alice"))?.balance).toBe(6);
+  });
+
+  it("refuse une deuxieme reservation en attente avec 409", async () => {
+    await post("/rides", booking);
+
+    const response = await post("/rides", booking);
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "Une reservation attend deja un Driver" });
+    expect(await repository.findRidesByRider("alice")).toHaveLength(1);
+  });
+
+  it("refuse une deuxieme annulation avec 409 sans debiter deux fois", async () => {
+    const bookingResponse = await post("/rides", booking);
+    const ride = await bookingResponse.json();
+    await repository.saveDriver({ id: "bob", name: "Bob" });
+    await repository.saveRide({ ...ride, driverId: "bob", driverOnTheWay: true });
+    await post(`/rides/${ride.id}/cancel`, { riderId: "alice" });
+
+    const response = await post(`/rides/${ride.id}/cancel`, { riderId: "alice" });
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "Cette course est deja annulee" });
+    expect((await repository.findRider("alice"))?.balance).toBe(45);
+  });
+
+  it("refuse l'annulation de la course d'un autre Rider avec 403", async () => {
+    const bookingResponse = await post("/rides", booking);
+    const ride = await bookingResponse.json();
+    await repository.saveRider({ id: "chloe", balance: 50 });
+
+    const response = await post(`/rides/${ride.id}/cancel`, { riderId: "chloe" });
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: "Cette course appartient a un autre Rider" });
+    expect((await repository.findRide(ride.id))?.cancelled).toBe(false);
+    expect((await repository.findRider("chloe"))?.balance).toBe(50);
+  });
+
+  it.each([
+    "Impossible de retrouver la ville de cette adresse",
+    "Impossible de calculer la distance du trajet",
+  ])("retourne 502 sans creer de course si Google echoue : %s", async (message) => {
+    scanner.error = new Error(message);
+
+    const response = await post("/rides", booking);
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: message });
+    expect(await repository.findRidesByRider("alice")).toEqual([]);
+  });
+
+  it("refuse un trajet sans tarif avec 422", async () => {
+    scanner.result = { fromCity: "Lyon", toCity: "Lille", distanceKm: 10 };
+
+    const response = await post("/rides", booking);
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ error: "Tarif non defini pour ce trajet" });
+    expect(await repository.findRidesByRider("alice")).toEqual([]);
+  });
 });
