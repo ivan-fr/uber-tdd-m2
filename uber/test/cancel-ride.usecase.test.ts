@@ -39,4 +39,16 @@ describe("Annuler une course", () => {
     expect(rider.balance).toBe(15);
     expect(ride.cancelled).toBe(true);
   });
+
+  it("refuse une deuxieme annulation sans retirer encore de l'argent", () => {
+    ride.driverId = "bob";
+    ride.driverOnTheWay = true;
+    usecase.handle(rider, ride, today);
+
+    expect(() => usecase.handle(rider, ride, today)).toThrow(
+      "Cette course est deja annulee",
+    );
+    expect(rider.balance).toBe(15);
+    expect(ride.cancelled).toBe(true);
+  });
 });
