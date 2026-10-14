@@ -1,10 +1,11 @@
 {
   "name": "uber-tdd-m2",
   "version": "1.0.0",
-  "description": "Projet Uber : reservation, annulation et stockage PostgreSQL",
+  "description": "Projet Uber : reservation, annulation et historique via une API avec PostgreSQL",
   "scripts": {
     "test": "vitest",
     "typecheck": "tsc --noEmit",
+    "start": "node --env-file-if-exists=.env --import tsx infra/server.ts",
     "test:e2e": "vitest run --config ./test/vitest-e2e.config.ts",
     "scan": "node --env-file=.env --import tsx infra/scan-addresses.ts",
     "test:integration": "vitest run --config ./test/vitest-integration.config.ts",
