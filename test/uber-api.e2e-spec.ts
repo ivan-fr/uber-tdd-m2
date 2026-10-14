@@ -20,6 +20,7 @@ describe("API Uber avec PostgreSQL", () => {
 	};
 
 	beforeEach(async () => {
+		await database("ride_estimates").delete();
 		await database("rides").delete();
 		await database("drivers").delete();
 		await database("riders").delete();
@@ -71,6 +72,119 @@ describe("API Uber avec PostgreSQL", () => {
 			to: booking.to,
 		});
 		expect(await repository.findRide(ride.id)).toEqual(ride);
+	});
+
+	it("POST /rides/estimate retourne un prix, un token et un expiresAt", async () => {
+		const response = await post("/rides/estimate", {
+			riderId: "alice",
+			from: booking.from,
+			to: booking.to,
+		});
+		const estimate = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(estimate).toMatchObject({
+			price: 7,
+			token: expect.any(String),
+			expiresAt: expect.any(String),
+		});
+		expect(await repository.findRidesByRider("alice")).toEqual([]);
+	});
+
+	it("POST /rides/estimate sans from/to retourne 400", async () => {
+		const response = await post("/rides/estimate", {
+			riderId: "alice",
+		});
+
+		expect(response.status).toBe(400);
+		expect(await response.json()).toHaveProperty("error");
+	});
+
+	it("POST /rides/book avec token valide retourne 201 et cree le Ride", async () => {
+		const estimateResponse = await post("/rides/estimate", {
+			riderId: "alice",
+			from: booking.from,
+			to: booking.to,
+		});
+		const estimate = await estimateResponse.json();
+
+		const response = await post("/rides/book", {
+			riderId: "alice",
+			token: estimate.token,
+		});
+		const ride = await response.json();
+
+		expect(response.status).toBe(201);
+		expect(ride).toMatchObject({
+			riderId: "alice",
+			from: booking.from,
+			to: booking.to,
+			price: estimate.price,
+			driverId: null,
+			driverOnTheWay: false,
+			cancelled: false,
+		});
+		expect((await repository.findRide(ride.id))?.price).toBe(estimate.price);
+	});
+
+	it("POST /rides/book avec token expire retourne 410", async () => {
+		const estimateResponse = await post("/rides/estimate", {
+			riderId: "alice",
+			from: booking.from,
+			to: booking.to,
+		});
+		const estimate = await estimateResponse.json();
+		await repository.saveRideEstimate({
+			token: estimate.token,
+			riderId: "alice",
+			from: booking.from,
+			to: booking.to,
+			distanceKm: 10,
+			price: 7,
+			isUberX: false,
+			createdAt: new Date(today.getTime() - 60_000),
+			expiresAt: new Date(today.getTime() - 60_000),
+			used: false,
+		});
+
+		const response = await post("/rides/book", {
+			riderId: "alice",
+			token: estimate.token,
+		});
+
+		expect(response.status).toBe(410);
+		expect(await response.json()).toEqual({ error: "Token expire" });
+	});
+
+	it("POST /rides/book avec token invalide retourne 404", async () => {
+		const response = await post("/rides/book", {
+			riderId: "alice",
+			token: "token-inconnu",
+		});
+
+		expect(response.status).toBe(404);
+		expect(await response.json()).toEqual({ error: "Token invalide" });
+	});
+
+	it("POST /rides/book avec token deja utilise retourne 409", async () => {
+		const estimateResponse = await post("/rides/estimate", {
+			riderId: "alice",
+			from: booking.from,
+			to: booking.to,
+		});
+		const estimate = await estimateResponse.json();
+		await post("/rides/book", {
+			riderId: "alice",
+			token: estimate.token,
+		});
+
+		const response = await post("/rides/book", {
+			riderId: "alice",
+			token: estimate.token,
+		});
+
+		expect(response.status).toBe(409);
+		expect(await response.json()).toEqual({ error: "Token deja utilise" });
 	});
 
 	it("POST /rides/:id/cancel annule la course et sauvegarde la penalite", async () => {

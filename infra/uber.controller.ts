@@ -4,6 +4,7 @@ import type { UberRepository } from "../app/uber.repository";
 import type { RouteScanner } from "../app/route.scanner";
 import { BookRideUsecase } from "../app/book-ride.usecase";
 import { CancelRideUsecase } from "../app/cancel-ride.usecase";
+import { EstimateRidePriceUsecase } from "../app/estimate-ride-price.usecase";
 import { ListRiderRideHistoryUsecase } from "../app/list-rides-history.usecase";
 
 export function createUberController(
@@ -46,6 +47,80 @@ export function createUberController(
 			today(),
 		);
 		response.status(201).json(ride);
+	});
+
+	api.post("/rides/estimate", async (request, response) => {
+		const { riderId, from, to, isUberX = false } = request.body ?? {};
+		if (!isText(riderId) || !isText(from) || !isText(to) || typeof isUberX !== "boolean") {
+			response
+				.status(400)
+				.json({
+					error: "riderId, from et to sont obligatoires ; isUberX doit etre un booleen",
+				});
+			return;
+		}
+
+		const rider = await repository.findRider(riderId);
+		if (!rider) {
+			response.status(404).json({ error: "Rider introuvable" });
+			return;
+		}
+
+		const route = await scanner.scan(from, to);
+		const estimate = await new EstimateRidePriceUsecase(repository, today).handle(
+			rider,
+			from,
+			to,
+			route.distanceKm,
+			isUberX,
+			today(),
+			route.fromCity,
+			route.toCity,
+		);
+		response.status(200).json({
+			price: estimate.price,
+			token: estimate.token,
+			expiresAt: estimate.expiresAt.toISOString(),
+		});
+	});
+
+	api.post("/rides/book", async (request, response) => {
+		const { riderId, token } = request.body ?? {};
+		if (!isText(riderId) || !isText(token)) {
+			response.status(400).json({
+				error: "riderId et token sont obligatoires",
+			});
+			return;
+		}
+
+		const rider = await repository.findRider(riderId);
+		if (!rider) {
+			response.status(404).json({ error: "Rider introuvable" });
+			return;
+		}
+
+		try {
+			const ride = await new EstimateRidePriceUsecase(repository, today).confirmReservation(
+				token,
+				rider,
+				today(),
+			);
+			response.status(201).json(ride);
+		} catch (error) {
+			if (error instanceof Error) {
+				const statuses: Record<string, number> = {
+					"Token invalide": 404,
+					"Token expire": 410,
+					"Token deja utilise": 409,
+				};
+				const status = statuses[error.message];
+				if (status) {
+					response.status(status).json({ error: error.message });
+					return;
+				}
+			}
+			throw error;
+		}
 	});
 
 	api.post("/rides/:id/cancel", async (request, response) => {
@@ -120,6 +195,9 @@ export function createUberController(
 			"Tarif non defini pour ce trajet": 422,
 			"Impossible de retrouver la ville de cette adresse": 502,
 			"Impossible de calculer la distance du trajet": 502,
+			"Token invalide": 404,
+			"Token expire": 410,
+			"Token deja utilise": 409,
 		};
 		if (error instanceof Error) {
 			const status = statuses[error.message];

@@ -20,6 +20,7 @@ export interface RideEstimate {
   isUberX: boolean;
   createdAt: Date;
   expiresAt: Date;
+  used?: boolean;
 }
 
 export interface Ride {

@@ -27,9 +27,18 @@ export class EstimateRidePriceUsecase {
     distanceKm: number,
     isUberX: boolean = false,
     today: Date = this.clock(),
+    fromForPricing: string = from,
+    toForPricing: string = to,
   ): Promise<RideEstimate> {
     const calculator = new CalculateRidePriceUsecase(this.clock);
-    const price = calculator.handle(from, to, distanceKm, today, isUberX, rider.birthDate);
+    const price = calculator.handle(
+      fromForPricing,
+      toForPricing,
+      distanceKm,
+      today,
+      isUberX,
+      rider.birthDate,
+    );
 
     const estimate: RideEstimate = {
       token: this.tokenFactory(),
@@ -41,6 +50,7 @@ export class EstimateRidePriceUsecase {
       isUberX,
       createdAt: new Date(today.getTime()),
       expiresAt: new Date(today.getTime() + 5 * 60 * 1000),
+      used: false,
     };
 
     await this.repository.saveRideEstimate(estimate);
@@ -58,7 +68,13 @@ export class EstimateRidePriceUsecase {
       throw new Error("Ce token ne correspond pas a ce Rider");
     }
 
+    if (estimate.used === true) {
+      throw new Error("Token deja utilise");
+    }
+
     if (today.getTime() > estimate.expiresAt.getTime()) {
+      estimate.used = true;
+      await this.repository.saveRideEstimate(estimate);
       throw new Error("Token expire");
     }
 
@@ -74,8 +90,9 @@ export class EstimateRidePriceUsecase {
       cancelled: false,
     };
 
+    estimate.used = true;
+    await this.repository.saveRideEstimate(estimate);
     await this.repository.saveRide(ride);
-    await this.repository.deleteRideEstimate(token);
     return ride;
   }
 }

@@ -59,15 +59,43 @@ export class KnexUberRepository implements UberRepository {
     }));
   }
 
-  async saveRideEstimate(_estimate: RideEstimate): Promise<void> {
-    return undefined;
+  async saveRideEstimate(estimate: RideEstimate): Promise<void> {
+    await this.database("ride_estimates")
+      .insert({
+        token: estimate.token,
+        riderId: estimate.riderId,
+        from: estimate.from,
+        to: estimate.to,
+        distanceKm: estimate.distanceKm,
+        price: estimate.price,
+        isUberX: estimate.isUberX,
+        used: estimate.used ?? false,
+        createdAt: estimate.createdAt,
+        expiresAt: estimate.expiresAt,
+      })
+      .onConflict("token")
+      .merge();
   }
 
-  async findRideEstimate(_token: string): Promise<RideEstimate | undefined> {
-    return undefined;
+  async findRideEstimate(token: string): Promise<RideEstimate | undefined> {
+    const row = await this.database("ride_estimates").where({ token }).first();
+    if (!row) return undefined;
+
+    return {
+      token: row.token,
+      riderId: row.riderId,
+      from: row.from,
+      to: row.to,
+      distanceKm: Number(row.distanceKm),
+      price: Number(row.price),
+      isUberX: Boolean(row.isUberX),
+      createdAt: new Date(row.createdAt),
+      expiresAt: new Date(row.expiresAt),
+      used: Boolean(row.used),
+    };
   }
 
-  async deleteRideEstimate(_token: string): Promise<void> {
-    return undefined;
+  async deleteRideEstimate(token: string): Promise<void> {
+    await this.database("ride_estimates").where({ token }).delete();
   }
 }
