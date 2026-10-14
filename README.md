@@ -163,5 +163,5 @@ Les erreurs retournent un objet JSON avec un champ `error` :
 operation deja effectuee, 422 pour un trajet sans tarif et 502 si Google Maps echoue.
 Une erreur inattendue retourne 500 avec un message generique.
 
-Le code des routes se trouve dans `infra/uber-api.ts`, le lancement dans
+Le controller des routes se trouve dans `infra/uber.controller.ts`, le lancement dans
 `infra/server.ts` et les tests E2E dans `test/uber-api.e2e-spec.ts`.

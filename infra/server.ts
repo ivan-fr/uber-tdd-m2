@@ -1,13 +1,13 @@
 import { knex } from "knex";
 import { KnexUberRepository } from "./knex-uber.repository";
 import { GoogleMapsScanner } from "./google-maps.scanner";
-import { createUberApi } from "./uber-api";
+import { createUberController } from "./uber.controller";
 
 const config = require("./knexfile.cjs");
 const database = knex(config.development);
 const repository = new KnexUberRepository(database);
 const scanner = new GoogleMapsScanner(process.env.GOOGLE_MAPS_API_KEY ?? "");
-const api = createUberApi(repository, scanner);
+const api = createUberController(repository, scanner);
 const port = Number(process.env.PORT ?? 3000);
 
 const server = api.listen(port, "127.0.0.1", () => {

@@ -1,7 +1,7 @@
 import { once } from "node:events";
 import type { Server } from "node:http";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createUberApi } from "../infra/uber-api";
+import { createUberController } from "../infra/uber.controller";
 import { KnexUberRepository } from "../infra/knex-uber.repository";
 import { database } from "./postgresql-test";
 import { StubRouteScanner } from "./stub-route.scanner";
@@ -27,7 +27,7 @@ describe("API Uber avec PostgreSQL", () => {
 		await repository.saveRider({ id: "alice", balance: 50 });
 		scanner = new StubRouteScanner();
 		today = new Date(2026, 5, 14);
-		server = createUberApi(repository, scanner, () => today).listen(
+		server = createUberController(repository, scanner, () => today).listen(
 			0,
 			"127.0.0.1",
 		);

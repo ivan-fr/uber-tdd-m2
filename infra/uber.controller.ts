@@ -6,7 +6,7 @@ import { BookRideUsecase } from "../app/book-ride.usecase";
 import { CancelRideUsecase } from "../app/cancel-ride.usecase";
 import { ListRiderRideHistoryUsecase } from "../app/list-rides-history.usecase";
 
-export function createUberApi(
+export function createUberController(
 	repository: UberRepository,
 	scanner: RouteScanner,
 	today: () => Date = () => new Date(),
