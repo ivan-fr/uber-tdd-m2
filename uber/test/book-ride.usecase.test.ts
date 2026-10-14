@@ -68,4 +68,17 @@ describe("Reserver une course", () => {
     expect(secondRide.cancelled).toBe(false);
     expect(usecase.rides).toEqual([firstRide, secondRide]);
   });
+
+  it("autorise une nouvelle reservation quand un Driver est deja assigne", () => {
+    const usecase = new BookRideUsecase();
+    const rider = { id: "alice", balance: 20 };
+    const firstRide = usecase.handle(rider, "Paris", "Paris", 10);
+    firstRide.driverId = "bob";
+
+    const secondRide = usecase.handle(rider, "Lyon", "Paris", 10);
+
+    expect(secondRide.price).toBe(5);
+    expect(secondRide.driverId).toBeNull();
+    expect(usecase.rides).toEqual([firstRide, secondRide]);
+  });
 });
