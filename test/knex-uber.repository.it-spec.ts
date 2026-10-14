@@ -4,6 +4,7 @@ import { KnexUberRepository } from "../infra/knex-uber.repository";
 import type { Ride } from "../app/models";
 import { BookRideUsecase } from "../app/book-ride.usecase";
 import { CancelRideUsecase } from "../app/cancel-ride.usecase";
+import { ListRiderRideHistoryUsecase } from "../app/list-rides-history.usecase";
 
 describe("Stocker les donnees Uber dans PostgreSQL", () => {
   let repository: KnexUberRepository;
@@ -231,6 +232,26 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
     expect(bookedRide.price).toBe(40);
     expect((await repository.findRide(bookedRide.id))?.price).toBe(40);
+  });
+
+  it("retrouve en base l'historique du Rider avec ses chauffeurs", async () => {
+    const alice = { id: "alice", balance: 40 };
+    const chloe = { id: "chloe", balance: 40 };
+    const bob = { id: "bob", name: "Bob" };
+    await repository.saveDriver(bob);
+    const firstRide = await new BookRideUsecase(repository).handle(alice, "Paris", "Paris", 10, false, today);
+    firstRide.driverId = "bob";
+    await repository.saveRide(firstRide);
+    const secondRide = await new BookRideUsecase(repository).handle(alice, "Lyon", "Paris", 10, false, today);
+    await new BookRideUsecase(repository).handle(chloe, "Paris", "Paris", 10, false, today);
+
+    const history = await new ListRiderRideHistoryUsecase(repository).handle("alice");
+
+    expect(history).toHaveLength(2);
+    expect(history).toEqual(expect.arrayContaining([
+      { ride: firstRide, driver: bob },
+      { ride: secondRide, driver: null },
+    ]));
   });
 
   it("une reservation refusee ne laisse pas de donnees en base", async () => {
