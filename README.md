@@ -1,4 +1,4 @@
-# Projet Uber : stories 1 a 7
+# Projet Uber : stories 1 a 8
 
 Le code Uber se trouve a la racine de ce depot. La story 3 enregistre les passagers
 (`riders`), les chauffeurs (`drivers`) et les courses (`rides`) dans PostgreSQL.
@@ -40,10 +40,16 @@ npm run knex migrate:make NOM_DE_LA_MIGRATION
 npm test -- --run test
 
 npm run test:integration:uber
+
+npm run test:e2e
+
+npm run typecheck
 ```
 
 Les tests d'integration lancent leur propre conteneur, appliquent les migrations,
 puis le suppriment a la fin. Ils utilisent un port disponible automatiquement.
+Les tests E2E lancent aussi un serveur HTTP et envoient de vraies requetes a l'API.
+Ils utilisent PostgreSQL Docker et un scanner Google simule, sans cle API.
 
 ### Comprendre le code
 
@@ -99,3 +105,63 @@ ils ne necessitent aucune cle et ne font aucun appel Google.
 
 Documentation officielle : [Geocoding](https://developers.google.com/maps/documentation/geocoding/requests-geocoding)
 et [Routes](https://developers.google.com/maps/documentation/routes/compute_route_directions).
+
+### Story 8 : utiliser l'API
+
+L'API utilise Express et appelle les trois usecases existants.
+Le passager doit deja exister en base : son solde et sa date de naissance sont lus
+dans PostgreSQL, sans les recevoir dans la requete.
+
+Avec Docker Desktop demarre et la cle Google Maps dans `.env` :
+
+```bash
+npm run db:start
+npm run knex migrate:latest
+npm run knex seed:run
+npm start
+```
+
+Le seed cree le passager `alice` avec 50 euros s'il n'existe pas encore.
+Il conserve les informations d'Alice si elle existe deja.
+L'API est accessible sur `http://127.0.0.1:3000`.
+On peut changer le port avec `PORT=3001 npm start`.
+
+| Methode | Adresse | Action | Reponse en cas de succes |
+| --- | --- | --- | --- |
+| POST | `/rides` | Reserver une course depuis deux adresses | 201 et la course creee |
+| POST | `/rides/:id/cancel` | Annuler une course | 200 et la penalite |
+| GET | `/riders/:id/rides` | Consulter l'historique d'un passager | 200 et les courses avec leurs chauffeurs |
+
+Pour reserver :
+
+```bash
+curl -X POST http://127.0.0.1:3000/rides \
+  -H 'Content-Type: application/json' \
+  -d '{"riderId":"alice","from":"10 rue de Rivoli, Paris","to":"20 avenue des Champs-Elysees, Paris","isUberX":false}'
+```
+
+`isUberX` est facultatif et vaut `false` par defaut.
+Google Maps calcule les villes et la distance ; l'application calcule le prix.
+
+Pour annuler, remplacer `ID_DE_LA_COURSE` par l'identifiant retourne a la reservation :
+
+```bash
+curl -X POST http://127.0.0.1:3000/rides/ID_DE_LA_COURSE/cancel \
+  -H 'Content-Type: application/json' \
+  -d '{"riderId":"alice"}'
+```
+
+Pour consulter l'historique :
+
+```bash
+curl http://127.0.0.1:3000/riders/alice/rides
+```
+
+Les erreurs retournent un objet JSON avec un champ `error` :
+400 pour une requete invalide, 403 pour annuler la course d'un autre passager,
+404 si le passager ou la course n'existe pas, 409 pour un solde insuffisant ou une
+operation deja effectuee, 422 pour un trajet sans tarif et 502 si Google Maps echoue.
+Une erreur inattendue retourne 500 avec un message generique.
+
+Le code des routes se trouve dans `infra/uber-api.ts`, le lancement dans
+`infra/server.ts` et les tests E2E dans `test/uber-api.e2e-spec.ts`.
