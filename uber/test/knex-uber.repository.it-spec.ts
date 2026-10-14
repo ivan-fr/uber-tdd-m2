@@ -68,4 +68,11 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
     expect(await database("drivers").where({ id: "bob" }).first()).toEqual(driver);
   });
+
+  it("findDriver retrouve un chauffeur", async () => {
+    const driver = { id: "bob", name: "Bob" };
+    await database("drivers").insert(driver);
+
+    expect(await repository.findDriver("bob")).toEqual(driver);
+  });
 });
