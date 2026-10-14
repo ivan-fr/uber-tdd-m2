@@ -2,12 +2,12 @@ import { CalculateRidePriceUsecase } from "./calculate-ride-price.usecase";
 import { randomUUID } from "node:crypto";
 
 import type { Ride, Rider } from "./models";
+import type { UberRepository } from "./uber.repository";
 
 export class BookRideUsecase {
-  // Pour cette story, les reservations restent dans un simple tableau.
-  public rides: Ride[] = [];
+  constructor(private repository: UberRepository) {}
 
-  handle(rider: Rider, from: string, to: string, distanceKm: number): Ride {
+  async handle(rider: Rider, from: string, to: string, distanceKm: number): Promise<Ride> {
     const calculator = new CalculateRidePriceUsecase();
     const price = calculator.handle(from, to, distanceKm);
 
@@ -16,7 +16,8 @@ export class BookRideUsecase {
     }
 
     // On regarde les anciennes reservations de ce Rider.
-    for (const existingRide of this.rides) {
+    const existingRides = await this.repository.findRidesByRider(rider.id);
+    for (const existingRide of existingRides) {
       // Les trois conditions doivent etre vraies pour bloquer la reservation.
       if (
         existingRide.riderId === rider.id &&
@@ -27,7 +28,7 @@ export class BookRideUsecase {
       }
     }
 
-    // Tout est bon : on cree la course, puis on la garde dans le tableau.
+    // Tout est bon : on cree la course, puis on la sauvegarde.
     const ride: Ride = {
       id: randomUUID(),
       riderId: rider.id,
@@ -40,7 +41,8 @@ export class BookRideUsecase {
       cancelled: false,
     };
 
-    this.rides.push(ride);
+    await this.repository.saveRider(rider);
+    await this.repository.saveRide(ride);
     return ride;
   }
 }

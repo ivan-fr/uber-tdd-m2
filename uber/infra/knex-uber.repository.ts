@@ -1,8 +1,9 @@
 import type { Knex } from "knex";
 import type { Driver, Ride, Rider } from "../app/models";
+import type { UberRepository } from "../app/uber.repository";
 
 // Un repository est une classe qui range et retrouve les donnees.
-export class KnexUberRepository {
+export class KnexUberRepository implements UberRepository {
   constructor(private database: Knex) {}
 
   async saveRider(rider: Rider): Promise<void> {

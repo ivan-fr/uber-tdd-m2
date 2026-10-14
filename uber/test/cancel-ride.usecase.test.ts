@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { BookRideUsecase } from "../app/book-ride.usecase";
 import type { Ride, Rider } from "../app/models";
 import { CancelRideUsecase } from "../app/cancel-ride.usecase";
+import { FakeUberRepository } from "./fake-uber.repository";
 
 describe("Annuler une course", () => {
   let usecase: CancelRideUsecase;
@@ -9,10 +10,10 @@ describe("Annuler une course", () => {
   let ride: Ride;
   let today: Date;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     usecase = new CancelRideUsecase();
     rider = { id: "alice", balance: 20 };
-    ride = new BookRideUsecase().handle(rider, "Paris", "Paris", 10);
+    ride = await new BookRideUsecase(new FakeUberRepository()).handle(rider, "Paris", "Paris", 10);
     // Les mois commencent a 0 : 5 correspond a juin.
     today = new Date(2026, 5, 14);
   });
