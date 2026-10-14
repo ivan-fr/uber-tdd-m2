@@ -179,4 +179,18 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     );
     expect(await newRepository.findRidesByRider("alice")).toHaveLength(1);
   });
+
+  it("une nouvelle instance peut reserver apres une annulation sauvegardee", async () => {
+    const rider = { id: "alice", balance: 20 };
+    const firstRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
+    await new CancelRideUsecase(repository).handle(rider, firstRide, new Date(2026, 5, 14));
+
+    const newRepository = new KnexUberRepository(database);
+    const secondRide = await new BookRideUsecase(newRepository).handle(rider, "Paris", "Paris", 10);
+
+    expect(secondRide.id).not.toBe(firstRide.id);
+    expect(await newRepository.findRide(firstRide.id)).toEqual(firstRide);
+    expect(await newRepository.findRide(secondRide.id)).toEqual(secondRide);
+    expect(await newRepository.findRidesByRider("alice")).toHaveLength(2);
+  });
 });
