@@ -2,6 +2,7 @@ import express from "express";
 import type { UberRepository } from "../app/uber.repository";
 import type { RouteScanner } from "../app/route.scanner";
 import { BookRideUsecase } from "../app/book-ride.usecase";
+import { CancelRideUsecase } from "../app/cancel-ride.usecase";
 
 export function createUberApi(
   repository: UberRepository,
@@ -23,6 +24,23 @@ export function createUberApi(
       rider, from, to, scanner, isUberX, today(),
     );
     response.status(201).json(ride);
+  });
+
+  api.post("/rides/:id/cancel", async (request, response) => {
+    const rider = await repository.findRider(request.body.riderId);
+    if (!rider) {
+      response.status(404).json({ error: "Rider introuvable" });
+      return;
+    }
+
+    const ride = await repository.findRide(request.params.id);
+    if (!ride) {
+      response.status(404).json({ error: "Course introuvable" });
+      return;
+    }
+
+    const penalty = await new CancelRideUsecase(repository).handle(rider, ride, today());
+    response.json({ penalty });
   });
 
   return api;
