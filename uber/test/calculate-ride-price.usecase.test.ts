@@ -36,4 +36,12 @@ describe("Calculer le prix d'une course", () => {
 
     expect(price).toBe(15);
   });
+
+  it("refuse un trajet exterieur vers exterieur car le sujet ne donne pas son tarif", () => {
+    const usecase = new CalculateRidePriceUsecase();
+
+    expect(() => usecase.handle("Lyon", "Lille", 10)).toThrow(
+      "Tarif non defini pour ce trajet",
+    );
+  });
 });
