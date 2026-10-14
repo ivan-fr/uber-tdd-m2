@@ -79,4 +79,16 @@ describe("Scanner les adresses avec Google Maps", () => {
   it("refuse une cle API vide", () => {
     expect(() => new GoogleMapsScanner(" ")).toThrow("Cle Google Maps manquante");
   });
+
+  it.each([
+    [" ", "Paris"],
+    ["Paris", ""],
+  ])("refuse une adresse vide avant d'appeler Google (%s, %s)", async (from, to) => {
+    const scanner = new GoogleMapsScanner("test-key");
+    const getCity = vi.spyOn(scanner, "getCity").mockResolvedValue("Paris");
+    vi.spyOn(scanner, "getDistance").mockResolvedValue(10);
+
+    await expect(scanner.scan(from, to)).rejects.toThrow("Deux adresses sont necessaires");
+    expect(getCity).not.toHaveBeenCalled();
+  });
 });
