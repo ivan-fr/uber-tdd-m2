@@ -63,4 +63,14 @@ describe("Annuler une course", () => {
     expect(rider.balance).toBe(15);
     expect(ride.cancelled).toBe(true);
   });
+
+  it("reste gratuite si le Driver est assigne mais pas encore en chemin", () => {
+    ride.driverId = "bob";
+
+    const penalty = usecase.handle(rider, ride, today);
+
+    expect(penalty).toBe(0);
+    expect(rider.balance).toBe(20);
+    expect(ride.cancelled).toBe(true);
+  });
 });
