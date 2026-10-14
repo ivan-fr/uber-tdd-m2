@@ -94,4 +94,17 @@ describe("Reserver une course", () => {
     expect(chloeRide.riderId).toBe("chloe");
     expect(usecase.rides).toEqual([aliceRide, chloeRide]);
   });
+
+  it("chaque course a un identifiant unique", () => {
+    const usecase = new BookRideUsecase();
+    const alice = { id: "alice", balance: 20 };
+    const chloe = { id: "chloe", balance: 20 };
+
+    const firstRide = usecase.handle(alice, "Paris", "Paris", 10);
+    const secondRide = usecase.handle(chloe, "Paris", "Paris", 10);
+
+    expect(firstRide.id).toEqual(expect.any(String));
+    expect(firstRide.id).not.toBe("");
+    expect(secondRide.id).not.toBe(firstRide.id);
+  });
 });
