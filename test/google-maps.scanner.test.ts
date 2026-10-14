@@ -80,6 +80,32 @@ describe("Scanner les adresses avec Google Maps", () => {
     expect(() => new GoogleMapsScanner(" ")).toThrow("Cle Google Maps manquante");
   });
 
+  it.each([Status.ZERO_RESULTS, Status.REQUEST_DENIED])("refuse une adresse non resolue (%s)", async (status) => {
+    vi.spyOn(Client.prototype, "geocode").mockResolvedValue({ data: { status: status, results: [] } } as GeocodeResponse);
+
+    await expect(new GoogleMapsScanner("test-key").getCity("adresse inconnue")).rejects.toThrow(
+      "Impossible de retrouver la ville de cette adresse",
+    );
+  });
+
+  it("refuse une reponse Google qui ne contient aucune ville", async () => {
+    vi.spyOn(Client.prototype, "geocode").mockResolvedValue({
+      data: { status: Status.OK, results: [{ address_components: [] }] },
+    } as GeocodeResponse);
+
+    await expect(new GoogleMapsScanner("test-key").getCity("adresse inconnue")).rejects.toThrow(
+      "Impossible de retrouver la ville de cette adresse",
+    );
+  });
+
+  it("ne transmet pas les details de l'erreur Google contenant la cle", async () => {
+    vi.spyOn(Client.prototype, "geocode").mockRejectedValue(new Error("Erreur reseau avec test-key"));
+
+    await expect(new GoogleMapsScanner("test-key").getCity("Paris")).rejects.toThrow(
+      /^Impossible de retrouver la ville de cette adresse$/,
+    );
+  });
+
   it("accepte aussi une ville retournee comme postal_town", async () => {
     vi.spyOn(Client.prototype, "geocode").mockResolvedValue({
       data: {
