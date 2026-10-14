@@ -14,5 +14,8 @@ module.exports = {
       directory: path.join(__dirname, "migrations"),
       extension: "js",
     },
+    seeds: {
+      directory: path.join(__dirname, "seeds"),
+    },
   },
 };
