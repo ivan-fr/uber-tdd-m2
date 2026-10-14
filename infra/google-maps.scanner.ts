@@ -9,6 +9,10 @@ export class GoogleMapsScanner implements RouteScanner {
   }
 
   async scan(fromAddress: string, toAddress: string): Promise<ScannedRoute> {
+    if (!fromAddress.trim() || !toAddress.trim()) {
+      throw new Error("Deux adresses sont necessaires");
+    }
+
     const fromCity = await this.getCity(fromAddress);
     const toCity = await this.getCity(toAddress);
     const distanceKm = await this.getDistance(fromAddress, toAddress);
