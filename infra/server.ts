@@ -11,19 +11,19 @@ const api = createUberApi(repository, scanner);
 const port = Number(process.env.PORT ?? 3000);
 
 const server = api.listen(port, "127.0.0.1", () => {
-  console.log(`API Uber disponible sur http://127.0.0.1:${port}`);
+	console.log(`API Uber disponible sur http://127.0.0.1:${port}`);
 });
 
 server.on("error", async () => {
-  console.error("Impossible de demarrer le serveur HTTP");
-  await database.destroy();
-  process.exitCode = 1;
+	console.error("Impossible de demarrer le serveur HTTP");
+	await database.destroy();
+	process.exitCode = 1;
 });
 
 function stop() {
-  server.close(async () => {
-    await database.destroy();
-  });
+	server.close(async () => {
+		await database.destroy();
+	});
 }
 
 process.on("SIGINT", stop);
