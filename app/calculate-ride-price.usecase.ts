@@ -1,5 +1,5 @@
 export class CalculateRidePriceUsecase {
-  handle(from: string, to: string, distanceKm: number): number {
+  handle(from: string, to: string, distanceKm: number, today: Date = new Date()): number {
     let basePrice: number;
 
     if (from === "Paris" && to === "Paris") {
@@ -12,6 +12,14 @@ export class CalculateRidePriceUsecase {
       throw new Error("Tarif non defini pour ce trajet");
     }
 
-    return basePrice + distanceKm * 0.5;
+    const price = basePrice + distanceKm * 0.5;
+    const isChristmasEve = today.getMonth() === 11 && today.getDate() === 24;
+    const isChristmasDay = today.getMonth() === 11 && today.getDate() === 25;
+
+    if (isChristmasEve || isChristmasDay) {
+      return price * 2;
+    }
+
+    return price;
   }
 }

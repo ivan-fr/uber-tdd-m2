@@ -34,6 +34,17 @@ describe("Calculer le prix d'une course", () => {
     expect(price).toBe(15);
   });
 
+  it.each([
+    [new Date(2026, 11, 24), 30],
+    [new Date(2026, 11, 25), 30],
+  ])("double le montant total pendant la soirée ou le jour de Noel (%s)", (date, expected) => {
+    const usecase = new CalculateRidePriceUsecase();
+
+    const price = usecase.handle("Paris", "Lyon", 10, date);
+
+    expect(price).toBe(expected);
+  });
+
   it("refuse un trajet exterieur vers exterieur car le sujet ne donne pas son tarif", () => {
     const usecase = new CalculateRidePriceUsecase();
 

@@ -9,7 +9,7 @@ export class BookRideUsecase {
 
   async handle(rider: Rider, from: string, to: string, distanceKm: number): Promise<Ride> {
     const calculator = new CalculateRidePriceUsecase();
-    const price = calculator.handle(from, to, distanceKm);
+    const price = calculator.handle(from, to, distanceKm, new Date());
 
     if (rider.balance < price) {
       throw new Error("Fonds insuffisants");
