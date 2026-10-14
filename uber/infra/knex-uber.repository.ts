@@ -28,4 +28,8 @@ export class KnexUberRepository {
   async saveDriver(driver: Driver): Promise<void> {
     await this.database("drivers").insert(driver).onConflict("id").merge();
   }
+
+  async findDriver(id: string): Promise<Driver | undefined> {
+    return this.database("drivers").where({ id: id }).first();
+  }
 }
