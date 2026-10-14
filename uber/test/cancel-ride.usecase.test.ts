@@ -28,4 +28,15 @@ describe("Annuler une course", () => {
     expect(penalty).toBe(0);
     expect(rider.balance).toBe(20);
   });
+
+  it("retire 5 euros quand le Driver est deja en chemin", () => {
+    ride.driverId = "bob";
+    ride.driverOnTheWay = true;
+
+    const penalty = usecase.handle(rider, ride, today);
+
+    expect(penalty).toBe(5);
+    expect(rider.balance).toBe(15);
+    expect(ride.cancelled).toBe(true);
+  });
 });
