@@ -7,4 +7,15 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     expect(await database.schema.hasTable("drivers")).toBe(true);
     expect(await database.schema.hasTable("rides")).toBe(true);
   });
+
+  it("la migration peut etre annulee puis reappliquee", async () => {
+    await database.migrate.rollback();
+
+    expect(await database.schema.hasTable("rides")).toBe(false);
+    expect(await database.schema.hasTable("drivers")).toBe(false);
+    expect(await database.schema.hasTable("riders")).toBe(false);
+
+    await database.migrate.latest();
+    expect(await database.schema.hasTable("rides")).toBe(true);
+  });
 });
