@@ -26,6 +26,17 @@ describe("Historique des courses d'un Rider", () => {
     expect(history).toEqual([{ ride: ride, driver: null }]);
   });
 
+  it("ne montre pas les courses d'un autre Rider", async () => {
+    const alice = { id: "alice", balance: 20 };
+    const chloe = { id: "chloe", balance: 20 };
+    const aliceRide = await new BookRideUsecase(repository).handle(alice, "Paris", "Paris", 10, false, today);
+    await new BookRideUsecase(repository).handle(chloe, "Paris", "Paris", 10, false, today);
+
+    const history = await new ListRiderRideHistoryUsecase(repository).handle("alice");
+
+    expect(history).toEqual([{ ride: aliceRide, driver: null }]);
+  });
+
   it("liste toutes les courses avec le Driver associe", async () => {
     const rider = { id: "alice", balance: 40 };
     const bob = { id: "bob", name: "Bob" };
