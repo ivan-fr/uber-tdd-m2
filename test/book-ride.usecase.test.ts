@@ -105,4 +105,13 @@ describe("Reserver une course", () => {
     expect(firstRide.id).not.toBe("");
     expect(secondRide.id).not.toBe(firstRide.id);
   });
+
+  it("utilise la date fournie pour offrir UberX a l'anniversaire", async () => {
+    const rider = { id: "alice", balance: 20, birthDate: new Date(2000, 5, 14) };
+
+    const ride = await usecase.handle(rider, "Paris", "Lyon", 10, true, new Date(2026, 5, 14));
+
+    expect(ride.price).toBe(15);
+    expect(repository.rides).toEqual([ride]);
+  });
 });
