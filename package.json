@@ -7,6 +7,10 @@
     "test": "vitest",
     "test:mutate": "stryker run",
     "test:integration": "vitest --config ./setup-integration-tests/vitest-integration.config.js",
+    "test:integration:uber": "vitest run --config ./uber/test/vitest-integration.config.ts",
+    "db:start": "docker compose -p uber-tdd-m2 -f uber/infra/docker-compose.yml up -d --wait",
+    "db:stop": "docker compose -p uber-tdd-m2 -f uber/infra/docker-compose.yml down",
+    "knex": "knex --knexfile ./uber/infra/knexfile.cjs",
     "test:e2e": "vitest --config ./setup-integration-tests/vitest-e2e.config.js"
   },
   "license": "MIT",
