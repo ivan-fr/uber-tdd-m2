@@ -166,4 +166,17 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     expect(await repository.findDriver("bob")).toEqual({ id: "bob", name: "Robert" });
     expect(await database("drivers").select()).toHaveLength(1);
   });
+
+  it("une nouvelle instance retrouve la reservation en attente et bloque la suivante", async () => {
+    const rider = { id: "alice", balance: 20 };
+    await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
+
+    const newRepository = new KnexUberRepository(database);
+    const newUsecase = new BookRideUsecase(newRepository);
+
+    await expect(newUsecase.handle(rider, "Paris", "Paris", 10)).rejects.toThrow(
+      "Une reservation attend deja un Driver",
+    );
+    expect(await newRepository.findRidesByRider("alice")).toHaveLength(1);
+  });
 });
