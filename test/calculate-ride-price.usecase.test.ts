@@ -19,6 +19,14 @@ describe("Calculer le prix d'une course", () => {
     expect(price).toBe(7);
   });
 
+  it("arrondit au centime le prix calcule avec une distance en metres", () => {
+    const usecase = new CalculateRidePriceUsecase();
+
+    const price = usecase.handle("Paris", "Paris", 1.235, today);
+
+    expect(price).toBe(2.62);
+  });
+
   it("Lyon vers Paris sur 10 km coute 5 euros", () => {
     const usecase = new CalculateRidePriceUsecase();
 
