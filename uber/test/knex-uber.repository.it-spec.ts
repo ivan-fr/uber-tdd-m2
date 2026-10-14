@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { database } from "./postgresql-test";
 import { KnexUberRepository } from "../infra/knex-uber.repository";
+import type { Ride } from "../app/models";
 
 describe("Stocker les donnees Uber dans PostgreSQL", () => {
   let repository: KnexUberRepository;
+  let ride: Ride;
 
   beforeEach(async () => {
     // On vide seulement les tables du conteneur de test.
@@ -11,6 +13,17 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     await database("drivers").delete();
     await database("riders").delete();
     repository = new KnexUberRepository(database);
+    ride = {
+      id: "00000000-0000-4000-8000-000000000001",
+      riderId: "alice",
+      from: "Paris",
+      to: "Paris",
+      distanceKm: 1.5,
+      price: 2.75,
+      driverId: null,
+      driverOnTheWay: false,
+      cancelled: false,
+    };
   });
 
   it("la migration cree les tables riders, drivers et rides", async () => {
@@ -74,5 +87,17 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     await database("drivers").insert(driver);
 
     expect(await repository.findDriver("bob")).toEqual(driver);
+  });
+
+  it("saveRide enregistre une course avec ses montants decimaux", async () => {
+    await database("riders").insert({ id: "alice", balance: 20 });
+
+    await repository.saveRide(ride);
+
+    expect(await database("rides").where({ id: ride.id }).first()).toEqual({
+      ...ride,
+      distanceKm: "1.500",
+      price: "2.75",
+    });
   });
 });
