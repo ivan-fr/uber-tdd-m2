@@ -12,4 +12,16 @@ export class KnexUberRepository {
       birthDate: rider.birthDate ?? null,
     });
   }
+
+  async findRider(id: string): Promise<Rider | undefined> {
+    const row = await this.database("riders").where({ id: id }).first();
+    if (!row) return undefined;
+
+    return {
+      id: row.id,
+      // PostgreSQL renvoie les decimaux en texte : Number les convertit.
+      balance: Number(row.balance),
+      birthDate: row.birthDate ?? undefined,
+    };
+  }
 }
