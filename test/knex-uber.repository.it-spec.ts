@@ -211,7 +211,7 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     );
 
     expect(bookedRide.price).toBe(15);
-    expect(await repository.findRide(bookedRide.id))?.price.toBe(15);
+    expect((await repository.findRide(bookedRide.id))?.price).toBe(15);
   });
 
   it("une reservation refusee ne laisse pas de donnees en base", async () => {
