@@ -11,6 +11,12 @@ describe("Reserver une course avec deux adresses", () => {
   let scanner: StubRouteScanner;
   let usecase: BookRideUsecase;
 
+  beforeEach(() => {
+    repository = new FakeUberRepository();
+    scanner = new StubRouteScanner();
+    usecase = new BookRideUsecase(repository);
+  });
+
   it("utilise la ville Google plutot que le mot Paris present dans une adresse", async () => {
     const rider = { id: "alice", balance: 20 };
     scanner.result = { fromCity: "Versailles", toCity: "Paris", distanceKm: 10 };
@@ -58,12 +64,6 @@ describe("Reserver une course avec deux adresses", () => {
     const ride = await usecase.handleFromAddresses(rider, from, to, scanner, true, today);
 
     expect(ride.price).toBe(7);
-  });
-
-  beforeEach(() => {
-    repository = new FakeUberRepository();
-    scanner = new StubRouteScanner();
-    usecase = new BookRideUsecase(repository);
   });
 
   it("utilise les villes et les kilometres du scanner et conserve les adresses", async () => {
