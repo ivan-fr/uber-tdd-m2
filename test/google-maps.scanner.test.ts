@@ -63,6 +63,40 @@ describe("Scanner les adresses avec Google Maps", () => {
     );
   });
 
+  it("accepte une distance de zero metre", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ routes: [{ distanceMeters: 0 }] }))));
+
+    expect(await new GoogleMapsScanner("test-key").getDistance("Paris", "Paris")).toBe(0);
+  });
+
+  it.each([
+    { routes: [] },
+    { routes: [{ distanceMeters: -1 }] },
+    { routes: [{ distanceMeters: "123" }] },
+  ])("refuse une distance absente ou invalide (%j)", async (data) => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(data))));
+
+    await expect(new GoogleMapsScanner("test-key").getDistance("Paris", "Lyon")).rejects.toThrow(
+      "Impossible de calculer la distance du trajet",
+    );
+  });
+
+  it("signale une erreur HTTP de Routes API", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("", { status: 403 })));
+
+    await expect(new GoogleMapsScanner("test-key").getDistance("Paris", "Lyon")).rejects.toThrow(
+      "Impossible de calculer la distance du trajet",
+    );
+  });
+
+  it("signale une panne reseau de Routes API", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Reseau indisponible")));
+
+    await expect(new GoogleMapsScanner("test-key").getDistance("Paris", "Lyon")).rejects.toThrow(
+      "Impossible de calculer la distance du trajet",
+    );
+  });
+
   it("retourne les deux villes et la distance du trajet", async () => {
     const scanner = new GoogleMapsScanner("test-key");
     const getCity = vi.spyOn(scanner, "getCity").mockResolvedValueOnce("Paris").mockResolvedValueOnce("Versailles");
