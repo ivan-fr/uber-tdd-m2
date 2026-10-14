@@ -31,7 +31,8 @@ export class GoogleMapsScanner implements RouteScanner {
       }
 
       const components = response.data.results[0]?.address_components ?? [];
-      const city = components.find((component) => component.types.includes(AddressType.locality));
+      const city = components.find((component) => component.types.includes(AddressType.locality))
+        ?? components.find((component) => component.types.includes(AddressType.postal_town));
       if (!city) throw new Error("Ville introuvable");
 
       return city.long_name;
