@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { database } from "./postgresql-test";
 import { KnexUberRepository } from "../infra/knex-uber.repository";
 import type { Ride } from "../app/models";
+import { BookRideUsecase } from "../app/book-ride.usecase";
 
 describe("Stocker les donnees Uber dans PostgreSQL", () => {
   let repository: KnexUberRepository;
@@ -119,5 +120,15 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     ]);
 
     expect(await repository.findRidesByRider("alice")).toEqual([ride]);
+  });
+
+  it("reserver une course enregistre le Rider et la course en base", async () => {
+    const rider = { id: "alice", balance: 20 };
+    const usecase = new BookRideUsecase(repository);
+
+    const bookedRide = await usecase.handle(rider, "Paris", "Paris", 10);
+
+    expect(await repository.findRider("alice")).toEqual(rider);
+    expect(await repository.findRide(bookedRide.id)).toEqual(bookedRide);
   });
 });
