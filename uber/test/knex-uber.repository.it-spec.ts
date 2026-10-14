@@ -3,6 +3,7 @@ import { database } from "./postgresql-test";
 import { KnexUberRepository } from "../infra/knex-uber.repository";
 import type { Ride } from "../app/models";
 import { BookRideUsecase } from "../app/book-ride.usecase";
+import { CancelRideUsecase } from "../app/cancel-ride.usecase";
 
 describe("Stocker les donnees Uber dans PostgreSQL", () => {
   let repository: KnexUberRepository;
@@ -130,5 +131,23 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
     expect(await repository.findRider("alice")).toEqual(rider);
     expect(await repository.findRide(bookedRide.id)).toEqual(bookedRide);
+  });
+
+  it("annuler une course conserve l'annulation et le nouveau solde en base", async () => {
+    const rider = { id: "alice", balance: 20 };
+    const bookedRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
+    await repository.saveDriver({ id: "bob", name: "Bob" });
+    bookedRide.driverId = "bob";
+    bookedRide.driverOnTheWay = true;
+    await repository.saveRide(bookedRide);
+
+    const penalty = await new CancelRideUsecase(repository).handle(rider, bookedRide, new Date(2026, 5, 14));
+
+    const savedRide = await repository.findRide(bookedRide.id);
+    const savedRider = await repository.findRider("alice");
+    expect(penalty).toBe(5);
+    expect(savedRide?.cancelled).toBe(true);
+    expect(savedRider?.balance).toBe(15);
+    expect(await database("rides").select()).toHaveLength(1);
   });
 });
