@@ -73,4 +73,15 @@ describe("Annuler une course", () => {
     expect(rider.balance).toBe(20);
     expect(ride.cancelled).toBe(true);
   });
+
+  it("facture 5 euros si le jour de naissance correspond mais pas le mois", () => {
+    rider.birthDate = new Date(2000, 4, 14);
+    ride.driverId = "bob";
+    ride.driverOnTheWay = true;
+
+    const penalty = usecase.handle(rider, ride, today);
+
+    expect(penalty).toBe(5);
+    expect(rider.balance).toBe(15);
+  });
 });
