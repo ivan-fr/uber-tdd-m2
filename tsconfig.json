@@ -1,16 +1,14 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es5",
-		"strict": true,
-		"noImplicitAny": false,
-		"sourceMap": true,
-		"baseUrl": "./",
-		"resolveJsonModule": true,
-		"esModuleInterop": true,
-		"paths": {
-			"@/*": ["app/*"]
-		}
-	},
-	"exclude": ["node_modules"]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2022",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "uber/**/*.ts",
+    "vitest.config.ts"
+  ]
 }

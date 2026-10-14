@@ -1,43 +1,28 @@
 {
-  "name": "kata-template",
+  "name": "uber-tdd-m2",
   "version": "1.0.0",
-  "description": "Kata template",
+  "description": "Projet Uber : reservation, annulation et stockage PostgreSQL",
   "scripts": {
-    "dev": "ts-node ./api/server.ts",
     "test": "vitest",
-    "test:mutate": "stryker run",
-    "test:integration": "vitest --config ./setup-integration-tests/vitest-integration.config.js",
+    "typecheck": "tsc --noEmit",
+    "test:integration": "vitest run --config ./uber/test/vitest-integration.config.ts",
     "test:integration:uber": "vitest run --config ./uber/test/vitest-integration.config.ts",
     "db:start": "docker compose -p uber-tdd-m2 -f uber/infra/docker-compose.yml up -d --wait",
     "db:stop": "docker compose -p uber-tdd-m2 -f uber/infra/docker-compose.yml down",
-    "knex": "knex --knexfile ./uber/infra/knexfile.cjs",
-    "test:e2e": "vitest --config ./setup-integration-tests/vitest-e2e.config.js"
+    "knex": "knex --knexfile ./uber/infra/knexfile.cjs"
   },
   "license": "MIT",
   "private": true,
   "devDependencies": {
     "@biomejs/biome": "2.2.4",
-    "@stryker-mutator/core": "9.1.1",
-    "@stryker-mutator/typescript": "4.0.0",
-    "@stryker-mutator/vitest-runner": "9.1.1",
     "@types/node": "24.5.2",
     "@vitest/coverage-v8": "3.2.4",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "4.2.0",
     "typescript": "^5.9.2",
-    "vite-tsconfig-paths": "5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "testcontainers": "^11.6.0"
   },
   "dependencies": {
-    "@types/knex": "^0.15.2",
-    "bluebird": "^3.7.2",
-    "cors": "^2.8.5",
-    "date-fns": "^4.1.0",
-    "express": "^5.1.0",
     "knex": "^3.1.0",
-    "pg": "^8.16.3",
-    "supertest": "^7.1.4",
-    "testcontainers": "^11.6.0",
-    "ts-jest": "^29.4.4"
+    "pg": "^8.16.3"
   }
 }
