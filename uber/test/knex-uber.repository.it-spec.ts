@@ -100,4 +100,11 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
       price: "2.75",
     });
   });
+
+  it("findRide retrouve la course avec des nombres utilisables", async () => {
+    await database("riders").insert({ id: "alice", balance: 20 });
+    await database("rides").insert(ride);
+
+    expect(await repository.findRide(ride.id)).toEqual(ride);
+  });
 });
