@@ -107,4 +107,17 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
     expect(await repository.findRide(ride.id)).toEqual(ride);
   });
+
+  it("findRidesByRider retourne seulement les courses du Rider demande", async () => {
+    await database("riders").insert([
+      { id: "alice", balance: 20 },
+      { id: "chloe", balance: 20 },
+    ]);
+    await database("rides").insert([
+      ride,
+      { ...ride, id: "00000000-0000-4000-8000-000000000002", riderId: "chloe" },
+    ]);
+
+    expect(await repository.findRidesByRider("alice")).toEqual([ride]);
+  });
 });
