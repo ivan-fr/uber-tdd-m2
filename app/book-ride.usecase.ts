@@ -65,8 +65,14 @@ export class BookRideUsecase {
       cancelled: false,
     };
 
-    await this.repository.saveRider(rider);
-    await this.repository.saveRide(ride);
+    await this.repository.withTransaction(async (transactionalRepository) => {
+      const updatedRider = {
+        ...rider,
+        loyaltyPoints: (rider.loyaltyPoints ?? 0) + 1,
+      };
+      await transactionalRepository.saveRider(updatedRider);
+      await transactionalRepository.saveRide(ride);
+    });
     return ride;
   }
 }

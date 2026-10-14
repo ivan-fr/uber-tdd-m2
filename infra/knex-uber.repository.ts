@@ -6,12 +6,17 @@ export class KnexUberRepository implements UberRepository {
   constructor(private database: Knex) {}
 
   async saveRider(rider: Rider): Promise<void> {
+    const payload: Record<string, unknown> = {
+      id: rider.id,
+      balance: rider.balance,
+      birthDate: rider.birthDate ?? null,
+    };
+    if (rider.loyaltyPoints !== undefined) {
+      payload.loyaltyPoints = rider.loyaltyPoints;
+    }
+
     await this.database("riders")
-      .insert({
-        id: rider.id,
-        balance: rider.balance,
-        birthDate: rider.birthDate ?? null,
-      })
+      .insert(payload)
       .onConflict("id")
       .merge();
   }
@@ -20,11 +25,21 @@ export class KnexUberRepository implements UberRepository {
     const row = await this.database("riders").where({ id: id }).first();
     if (!row) return undefined;
 
-    return {
+    const rider: Rider = {
       id: row.id,
       balance: Number(row.balance),
-      birthDate: row.birthDate ?? undefined,
     };
+
+    if (row.birthDate) {
+      rider.birthDate = new Date(row.birthDate);
+    }
+
+    const loyaltyPoints = Number(row.loyaltyPoints ?? 0);
+    if (loyaltyPoints !== 0) {
+      rider.loyaltyPoints = loyaltyPoints;
+    }
+
+    return rider;
   }
 
   async saveDriver(driver: Driver): Promise<void> {
@@ -37,6 +52,23 @@ export class KnexUberRepository implements UberRepository {
 
   async saveRide(ride: Ride): Promise<void> {
     await this.database("rides").insert(ride).onConflict("id").merge();
+  }
+
+  async saveRideWithLoyaltyPoints(rider: Rider, ride: Ride): Promise<void> {
+    await this.database.transaction(async (trx) => {
+      const updatedRider = {
+        ...rider,
+        loyaltyPoints: (rider.loyaltyPoints ?? 0) + 1,
+      };
+      await trx("riders")
+        .where({ id: rider.id })
+        .update({ loyaltyPoints: updatedRider.loyaltyPoints });
+      await trx("rides").insert(ride).onConflict("id").merge();
+    });
+  }
+
+  async withTransaction<T>(callback: (repository: UberRepository) => Promise<T>): Promise<T> {
+    return this.database.transaction(async (trx) => callback(new KnexUberRepository(trx)));
   }
 
   async findRide(id: string): Promise<Ride | undefined> {

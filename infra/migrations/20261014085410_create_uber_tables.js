@@ -3,6 +3,8 @@ exports.up = async function(knex) {
     table.string("id").primary();
     table.decimal("balance", 10, 2).notNullable();
     table.date("birthDate").nullable();
+    //bonus
+    table.integer("loyaltyPoints").notNullable().defaultTo(0);
   });
 
   await knex.schema.createTable("drivers", (table) => {

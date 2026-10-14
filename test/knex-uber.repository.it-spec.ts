@@ -47,6 +47,7 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
       id: "alice",
       balance: "20.50",
       birthDate: new Date(2000, 5, 14),
+      loyaltyPoints: 0,
     });
   });
 
@@ -120,7 +121,10 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
     const bookedRide = await usecase.handle(rider, "Paris", "Paris", 10, false, today);
 
-    expect(await repository.findRider("alice")).toEqual(rider);
+    expect(await repository.findRider("alice")).toEqual({
+      ...rider,
+      loyaltyPoints: 1,
+    });
     expect(await repository.findRide(bookedRide.id)).toEqual(bookedRide);
   });
 

@@ -91,8 +91,17 @@ export class EstimateRidePriceUsecase {
     };
 
     estimate.used = true;
-    await this.repository.saveRideEstimate(estimate);
-    await this.repository.saveRide(ride);
+
+    await this.repository.withTransaction(async (transactionalRepository) => {
+      const updatedRider = {
+        ...rider,
+        loyaltyPoints: (rider.loyaltyPoints ?? 0) + 1,
+      };
+      await transactionalRepository.saveRider(updatedRider);
+      await transactionalRepository.saveRide(ride);
+      await transactionalRepository.saveRideEstimate(estimate);
+    });
+
     return ride;
   }
 }

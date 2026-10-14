@@ -81,4 +81,36 @@ describe("Estimer une course avant reservation", () => {
     expect(ride.driverId).toBeNull();
     expect(repository.rides).toHaveLength(1);
   });
+// Bonus
+  it("On devra effectuer et tester une transaction sur le process de booking du ride ", async () => {
+    const repository = new FakeUberRepository();
+    const rider = { id: "alice", balance: 100, loyaltyPoints: 0 };
+    const usecase = new EstimateRidePriceUsecase(repository, () => new Date(2026, 5, 14, 9, 0));
+
+    const estimate = await usecase.handle(rider, "Paris", "Lyon", 10, false, new Date(2026, 5, 14, 9, 0));
+    const ride = await usecase.confirmReservation(estimate.token, rider, new Date(2026, 5, 14, 9, 1));
+
+    expect(ride.price).toBe(15);
+    expect(ride.driverId).toBeNull();
+    expect(repository.rides).toHaveLength(1);
+    expect(repository.riders.find((savedRider) => savedRider.id === "alice")?.loyaltyPoints).toBe(1);
+  });
+  // Bonus
+  it("annule la reservation si l'ajout du point de fidelite echoue", async () => {
+    const repository = new FakeUberRepository();
+    const rider = { id: "alice", balance: 100, loyaltyPoints: 0 };
+    const usecase = new EstimateRidePriceUsecase(repository, () => new Date(2026, 5, 14, 9, 0));
+
+    repository.withTransaction = async () => {
+      throw new Error("Impossible d'ajouter le point de fidelite");
+    };
+
+    const estimate = await usecase.handle(rider, "Paris", "Lyon", 10, false, new Date(2026, 5, 14, 9, 0));
+
+    await expect(
+      usecase.confirmReservation(estimate.token, rider, new Date(2026, 5, 14, 9, 1)),
+    ).rejects.toThrow("Impossible d'ajouter le point de fidelite");
+    expect(repository.rides).toEqual([]);
+    expect(repository.riders.find((savedRider) => savedRider.id === "alice")?.loyaltyPoints ?? 0).toBe(0);
+  });
 });

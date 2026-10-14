@@ -30,6 +30,19 @@ export class FakeUberRepository implements UberRepository {
     this.rides.push(ride);
   }
 
+  async saveRideWithLoyaltyPoints(rider: Rider, ride: Ride): Promise<void> {
+    const updatedRider = {
+      ...rider,
+      loyaltyPoints: (rider.loyaltyPoints ?? 0) + 1,
+    };
+    await this.saveRider(updatedRider);
+    await this.saveRide(ride);
+  }
+
+  async withTransaction<T>(callback: (repository: UberRepository) => Promise<T>): Promise<T> {
+    return callback(this);
+  }
+
   async findRide(id: string): Promise<Ride | undefined> {
     return this.rides.find((ride) => ride.id === id);
   }
