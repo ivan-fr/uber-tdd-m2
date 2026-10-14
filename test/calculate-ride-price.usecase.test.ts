@@ -104,6 +104,22 @@ describe("Calculer le prix d'une course", () => {
     expect(price).toBe(30);
   });
 
+  it("ajoute 50% sur le prix total entre 8h et 9h avec un stub de clock", () => {
+    const usecase = new CalculateRidePriceUsecase(() => new Date(2026, 5, 14, 8, 30));
+
+    const price = usecase.handle("Paris", "Lyon", 10);
+
+    expect(price).toBe(22.5);
+  });
+
+  it("cumule la surcharge aux heures de pointe avec les autres promotions", () => {
+    const usecase = new CalculateRidePriceUsecase(() => new Date(2026, 11, 24, 18, 30));
+
+    const price = usecase.handle("Paris", "Lyon", 10);
+
+    expect(price).toBe(45);
+  });
+
   it("refuse un trajet exterieur vers exterieur car le sujet ne donne pas son tarif", () => {
     const usecase = new CalculateRidePriceUsecase();
 
