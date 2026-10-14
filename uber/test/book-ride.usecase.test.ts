@@ -13,6 +13,7 @@ describe("Reserver une course", () => {
 
     // THEN : la reservation coute 7 euros et attend un Driver.
     expect(ride).toEqual({
+      id: ride.id,
       riderId: "alice",
       from: "Paris",
       to: "Paris",

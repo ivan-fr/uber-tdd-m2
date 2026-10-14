@@ -1,4 +1,5 @@
 import { CalculateRidePriceUsecase } from "./calculate-ride-price.usecase";
+import { randomUUID } from "node:crypto";
 
 import type { Ride, Rider } from "./models";
 
@@ -28,6 +29,7 @@ export class BookRideUsecase {
 
     // Tout est bon : on cree la course, puis on la garde dans le tableau.
     const ride: Ride = {
+      id: randomUUID(),
       riderId: rider.id,
       from: from,
       to: to,

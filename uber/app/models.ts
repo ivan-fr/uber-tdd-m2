@@ -12,6 +12,7 @@ export interface Driver {
 }
 
 export interface Ride {
+  id: string;
   riderId: string;
   from: string;
   to: string;
