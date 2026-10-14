@@ -8,8 +8,10 @@ import { CancelRideUsecase } from "../app/cancel-ride.usecase";
 describe("Stocker les donnees Uber dans PostgreSQL", () => {
   let repository: KnexUberRepository;
   let ride: Ride;
+  let today: Date;
 
   beforeEach(async () => {
+    today = new Date(2026, 5, 14);
     await database("rides").delete();
     await database("drivers").delete();
     await database("riders").delete();
@@ -114,7 +116,7 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     const rider = { id: "alice", balance: 20 };
     const usecase = new BookRideUsecase(repository);
 
-    const bookedRide = await usecase.handle(rider, "Paris", "Paris", 10);
+    const bookedRide = await usecase.handle(rider, "Paris", "Paris", 10, false, today);
 
     expect(await repository.findRider("alice")).toEqual(rider);
     expect(await repository.findRide(bookedRide.id)).toEqual(bookedRide);
@@ -122,7 +124,7 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
   it("annuler une course conserve l'annulation et le nouveau solde en base", async () => {
     const rider = { id: "alice", balance: 20 };
-    const bookedRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
+    const bookedRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10, false, today);
     await repository.saveDriver({ id: "bob", name: "Bob" });
     bookedRide.driverId = "bob";
     bookedRide.driverOnTheWay = true;
@@ -156,12 +158,12 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
   it("une nouvelle instance retrouve la reservation en attente et bloque la suivante", async () => {
     const rider = { id: "alice", balance: 20 };
-    await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
+    await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10, false, today);
 
     const newRepository = new KnexUberRepository(database);
     const newUsecase = new BookRideUsecase(newRepository);
 
-    await expect(newUsecase.handle(rider, "Paris", "Paris", 10)).rejects.toThrow(
+    await expect(newUsecase.handle(rider, "Paris", "Paris", 10, false, today)).rejects.toThrow(
       "Une reservation attend deja un Driver",
     );
     expect(await newRepository.findRidesByRider("alice")).toHaveLength(1);
@@ -169,11 +171,11 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
   it("une nouvelle instance peut reserver apres une annulation sauvegardee", async () => {
     const rider = { id: "alice", balance: 20 };
-    const firstRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
+    const firstRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10, false, today);
     await new CancelRideUsecase(repository).handle(rider, firstRide, new Date(2026, 5, 14));
 
     const newRepository = new KnexUberRepository(database);
-    const secondRide = await new BookRideUsecase(newRepository).handle(rider, "Paris", "Paris", 10);
+    const secondRide = await new BookRideUsecase(newRepository).handle(rider, "Paris", "Paris", 10, false, today);
 
     expect(secondRide.id).not.toBe(firstRide.id);
     expect(await newRepository.findRide(firstRide.id)).toEqual(firstRide);
@@ -183,7 +185,7 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
 
   it("la date de naissance relue en base permet l'annulation offerte", async () => {
     const rider = { id: "alice", balance: 20, birthDate: new Date(2000, 5, 14) };
-    const bookedRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
+    const bookedRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10, false, today);
     await repository.saveDriver({ id: "bob", name: "Bob" });
     bookedRide.driverId = "bob";
     bookedRide.driverOnTheWay = true;
@@ -208,6 +210,7 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
       "Lyon",
       10,
       true,
+      today,
     );
 
     expect(bookedRide.price).toBe(15);
@@ -217,7 +220,7 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
   it("une reservation refusee ne laisse pas de donnees en base", async () => {
     const rider = { id: "alice", balance: 6 };
 
-    await expect(new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10)).rejects.toThrow(
+    await expect(new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10, false, today)).rejects.toThrow(
       "Fonds insuffisants",
     );
 

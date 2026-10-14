@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { CalculateRidePriceUsecase } from "../app/calculate-ride-price.usecase";
 
 describe("Calculer le prix d'une course", () => {
+  const today = new Date(2026, 5, 14);
   it("Paris vers Paris sans kilometre coute 2 euros", () => {
     const usecase = new CalculateRidePriceUsecase();
 
-    const price = usecase.handle("Paris", "Paris", 0);
+    const price = usecase.handle("Paris", "Paris", 0, today);
 
     expect(price).toBe(2);
   });
@@ -13,7 +14,7 @@ describe("Calculer le prix d'une course", () => {
   it("Paris vers Paris sur 10 km coute 7 euros", () => {
     const usecase = new CalculateRidePriceUsecase();
 
-    const price = usecase.handle("Paris", "Paris", 10);
+    const price = usecase.handle("Paris", "Paris", 10, today);
 
     expect(price).toBe(7);
   });
@@ -21,7 +22,7 @@ describe("Calculer le prix d'une course", () => {
   it("Lyon vers Paris sur 10 km coute 5 euros", () => {
     const usecase = new CalculateRidePriceUsecase();
 
-    const price = usecase.handle("Lyon", "Paris", 10);
+    const price = usecase.handle("Lyon", "Paris", 10, today);
 
     expect(price).toBe(5);
   });
@@ -29,7 +30,7 @@ describe("Calculer le prix d'une course", () => {
   it("Paris vers Lyon sur 10 km coute 15 euros", () => {
     const usecase = new CalculateRidePriceUsecase();
 
-    const price = usecase.handle("Paris", "Lyon", 10);
+    const price = usecase.handle("Paris", "Lyon", 10, today);
 
     expect(price).toBe(15);
   });
@@ -98,7 +99,7 @@ describe("Calculer le prix d'une course", () => {
   it("refuse un trajet exterieur vers exterieur car le sujet ne donne pas son tarif", () => {
     const usecase = new CalculateRidePriceUsecase();
 
-    expect(() => usecase.handle("Lyon", "Lille", 10)).toThrow(
+    expect(() => usecase.handle("Lyon", "Lille", 10, today)).toThrow(
       "Tarif non defini pour ce trajet",
     );
   });

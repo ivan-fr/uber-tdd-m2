@@ -4,6 +4,7 @@ import { ListRiderRideHistoryUsecase } from "../app/list-rides-history.usecase";
 import { FakeUberRepository } from "./fake-uber.repository";
 
 describe("Historique des courses d'un Rider", () => {
+  const today = new Date(2026, 5, 14);
   let repository: FakeUberRepository;
 
   beforeEach(() => {
@@ -18,10 +19,10 @@ describe("Historique des courses d'un Rider", () => {
     await repository.saveDriver(bob);
     await repository.saveDriver(charlie);
 
-    const firstRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
+    const firstRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10, false, today);
     firstRide.driverId = bob.id;
 
-    const secondRide = await new BookRideUsecase(repository).handle(rider, "Lyon", "Paris", 10);
+    const secondRide = await new BookRideUsecase(repository).handle(rider, "Lyon", "Paris", 10, false, today);
     secondRide.driverId = charlie.id;
 
     const history = await new ListRiderRideHistoryUsecase(repository).handle(rider.id);

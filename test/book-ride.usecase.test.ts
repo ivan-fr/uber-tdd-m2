@@ -4,6 +4,7 @@ import { CancelRideUsecase } from "../app/cancel-ride.usecase";
 import { FakeUberRepository } from "./fake-uber.repository";
 
 describe("Reserver une course", () => {
+  const today = new Date(2026, 5, 14);
   let repository: FakeUberRepository;
   let usecase: BookRideUsecase;
 
@@ -15,7 +16,7 @@ describe("Reserver une course", () => {
   it("cree une reservation quand le Rider a assez d'argent", async () => {
     const rider = { id: "alice", balance: 20 };
 
-    const ride = await usecase.handle(rider, "Paris", "Paris", 10);
+    const ride = await usecase.handle(rider, "Paris", "Paris", 10, false, today);
 
     expect(ride).toEqual({
       id: ride.id,
@@ -34,7 +35,7 @@ describe("Reserver une course", () => {
   it("refuse la reservation quand le Rider n'a pas assez d'argent", async () => {
     const rider = { id: "alice", balance: 6 };
 
-    await expect(usecase.handle(rider, "Paris", "Paris", 10)).rejects.toThrow(
+    await expect(usecase.handle(rider, "Paris", "Paris", 10, false, today)).rejects.toThrow(
       "Fonds insuffisants",
     );
     expect(repository.rides).toEqual([]);
@@ -43,7 +44,7 @@ describe("Reserver une course", () => {
   it("accepte la reservation avec exactement le montant necessaire", async () => {
     const rider = { id: "alice", balance: 7 };
 
-    const ride = await usecase.handle(rider, "Paris", "Paris", 10);
+    const ride = await usecase.handle(rider, "Paris", "Paris", 10, false, today);
 
     expect(ride.price).toBe(7);
     expect(repository.rides).toEqual([ride]);
@@ -51,9 +52,9 @@ describe("Reserver une course", () => {
 
   it("refuse une deuxieme reservation tant que le Driver n'est pas assigne", async () => {
     const rider = { id: "alice", balance: 20 };
-    const firstRide = await usecase.handle(rider, "Paris", "Paris", 10);
+    const firstRide = await usecase.handle(rider, "Paris", "Paris", 10, false, today);
 
-    await expect(usecase.handle(rider, "Paris", "Lyon", 10)).rejects.toThrow(
+    await expect(usecase.handle(rider, "Paris", "Lyon", 10, false, today)).rejects.toThrow(
       "Une reservation attend deja un Driver",
     );
     expect(repository.rides).toEqual([firstRide]);
@@ -61,10 +62,10 @@ describe("Reserver une course", () => {
 
   it("autorise une nouvelle reservation apres l'annulation de la precedente", async () => {
     const rider = { id: "alice", balance: 20 };
-    const firstRide = await usecase.handle(rider, "Paris", "Paris", 10);
+    const firstRide = await usecase.handle(rider, "Paris", "Paris", 10, false, today);
     await new CancelRideUsecase(repository).handle(rider, firstRide, new Date(2026, 5, 14));
 
-    const secondRide = await usecase.handle(rider, "Paris", "Lyon", 10);
+    const secondRide = await usecase.handle(rider, "Paris", "Lyon", 10, false, today);
 
     expect(secondRide.price).toBe(15);
     expect(secondRide.cancelled).toBe(false);
@@ -73,10 +74,10 @@ describe("Reserver une course", () => {
 
   it("autorise une nouvelle reservation quand un Driver est deja assigne", async () => {
     const rider = { id: "alice", balance: 20 };
-    const firstRide = await usecase.handle(rider, "Paris", "Paris", 10);
+    const firstRide = await usecase.handle(rider, "Paris", "Paris", 10, false, today);
     firstRide.driverId = "bob";
 
-    const secondRide = await usecase.handle(rider, "Lyon", "Paris", 10);
+    const secondRide = await usecase.handle(rider, "Lyon", "Paris", 10, false, today);
 
     expect(secondRide.price).toBe(5);
     expect(secondRide.driverId).toBeNull();
@@ -86,9 +87,9 @@ describe("Reserver une course", () => {
   it("la reservation d'Alice n'empeche pas celle de Chloe", async () => {
     const alice = { id: "alice", balance: 20 };
     const chloe = { id: "chloe", balance: 20 };
-    const aliceRide = await usecase.handle(alice, "Paris", "Paris", 10);
+    const aliceRide = await usecase.handle(alice, "Paris", "Paris", 10, false, today);
 
-    const chloeRide = await usecase.handle(chloe, "Paris", "Paris", 10);
+    const chloeRide = await usecase.handle(chloe, "Paris", "Paris", 10, false, today);
 
     expect(chloeRide.riderId).toBe("chloe");
     expect(repository.rides).toEqual([aliceRide, chloeRide]);
@@ -98,8 +99,8 @@ describe("Reserver une course", () => {
     const alice = { id: "alice", balance: 20 };
     const chloe = { id: "chloe", balance: 20 };
 
-    const firstRide = await usecase.handle(alice, "Paris", "Paris", 10);
-    const secondRide = await usecase.handle(chloe, "Paris", "Paris", 10);
+    const firstRide = await usecase.handle(alice, "Paris", "Paris", 10, false, today);
+    const secondRide = await usecase.handle(chloe, "Paris", "Paris", 10, false, today);
 
     expect(firstRide.id).toEqual(expect.any(String));
     expect(firstRide.id).not.toBe("");

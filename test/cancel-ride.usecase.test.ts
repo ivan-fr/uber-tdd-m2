@@ -15,8 +15,8 @@ describe("Annuler une course", () => {
     repository = new FakeUberRepository();
     usecase = new CancelRideUsecase(repository);
     rider = { id: "alice", balance: 20 };
-    ride = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
     today = new Date(2026, 5, 14);
+    ride = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10, false, today);
   });
 
   it("annule gratuitement quand aucun Driver n'est en chemin", async () => {
