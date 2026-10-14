@@ -41,6 +41,15 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     expect(savedRider).toEqual(rider);
   });
 
+  it("saveRider met a jour un Rider sans creer de doublon", async () => {
+    await repository.saveRider({ id: "alice", balance: 20 });
+
+    await repository.saveRider({ id: "alice", balance: 15 });
+
+    expect(await repository.findRider("alice")).toEqual({ id: "alice", balance: 15 });
+    expect(await database("riders").select()).toHaveLength(1);
+  });
+
   it("la migration peut etre annulee puis reappliquee", async () => {
     await database.migrate.rollback();
 
