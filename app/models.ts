@@ -2,6 +2,7 @@ export interface Rider {
   id: string;
   balance: number;
   birthDate?: Date;
+  blacklistedDrivers?: string[];
 }
 
 export interface Driver {
