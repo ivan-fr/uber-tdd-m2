@@ -1,5 +1,5 @@
 import type { Knex } from "knex";
-import type { Driver, Ride, Rider } from "../app/models";
+import type { Driver, Ride, RideEstimate, Rider } from "../app/models";
 import type { UberRepository } from "../app/uber.repository";
 
 export class KnexUberRepository implements UberRepository {
@@ -57,5 +57,17 @@ export class KnexUberRepository implements UberRepository {
       distanceKm: Number(row.distanceKm),
       price: Number(row.price),
     }));
+  }
+
+  async saveRideEstimate(_estimate: RideEstimate): Promise<void> {
+    return undefined;
+  }
+
+  async findRideEstimate(_token: string): Promise<RideEstimate | undefined> {
+    return undefined;
+  }
+
+  async deleteRideEstimate(_token: string): Promise<void> {
+    return undefined;
   }
 }

@@ -1,4 +1,4 @@
-import type { Driver, Ride, Rider } from "./models";
+import type { Driver, Ride, RideEstimate, Rider } from "./models";
 
 export interface UberRepository {
   saveRider(rider: Rider): Promise<void>;
@@ -8,4 +8,7 @@ export interface UberRepository {
   saveRide(ride: Ride): Promise<void>;
   findRide(id: string): Promise<Ride | undefined>;
   findRidesByRider(riderId: string): Promise<Ride[]>;
+  saveRideEstimate(estimate: RideEstimate): Promise<void>;
+  findRideEstimate(token: string): Promise<RideEstimate | undefined>;
+  deleteRideEstimate(token: string): Promise<void>;
 }

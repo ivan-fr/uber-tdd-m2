@@ -10,6 +10,18 @@ export interface Driver {
   name: string;
 }
 
+export interface RideEstimate {
+  token: string;
+  riderId: string;
+  from: string;
+  to: string;
+  distanceKm: number;
+  price: number;
+  isUberX: boolean;
+  createdAt: Date;
+  expiresAt: Date;
+}
+
 export interface Ride {
   id: string;
   riderId: string;

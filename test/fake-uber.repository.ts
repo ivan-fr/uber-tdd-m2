@@ -1,10 +1,11 @@
-import type { Driver, Ride, Rider } from "../app/models";
+import type { Driver, Ride, RideEstimate, Rider } from "../app/models";
 import type { UberRepository } from "../app/uber.repository";
 
 export class FakeUberRepository implements UberRepository {
   public riders: Rider[] = [];
   public drivers: Driver[] = [];
   public rides: Ride[] = [];
+  public rideEstimates: RideEstimate[] = [];
 
   async saveRider(rider: Rider): Promise<void> {
     this.riders = this.riders.filter((savedRider) => savedRider.id !== rider.id);
@@ -35,5 +36,18 @@ export class FakeUberRepository implements UberRepository {
 
   async findRidesByRider(riderId: string): Promise<Ride[]> {
     return this.rides.filter((ride) => ride.riderId === riderId);
+  }
+
+  async saveRideEstimate(estimate: RideEstimate): Promise<void> {
+    this.rideEstimates = this.rideEstimates.filter((savedEstimate) => savedEstimate.token !== estimate.token);
+    this.rideEstimates.push(estimate);
+  }
+
+  async findRideEstimate(token: string): Promise<RideEstimate | undefined> {
+    return this.rideEstimates.find((estimate) => estimate.token === token);
+  }
+
+  async deleteRideEstimate(token: string): Promise<void> {
+    this.rideEstimates = this.rideEstimates.filter((estimate) => estimate.token !== token);
   }
 }
