@@ -5,6 +5,8 @@ import { CalculateRidePriceUsecase } from "./calculate-ride-price.usecase";
 export interface Rider {
   id: string;
   balance: number;
+  // Le ? signifie que la date de naissance peut ne pas etre renseignee.
+  birthDate?: Date;
 }
 
 export interface Ride {

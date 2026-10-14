@@ -6,9 +6,16 @@ export class CancelRideUsecase {
       throw new Error("Cette course est deja annulee");
     }
 
+    let isBirthday = false;
+    if (rider.birthDate !== undefined) {
+      isBirthday =
+        rider.birthDate.getDate() === today.getDate() &&
+        rider.birthDate.getMonth() === today.getMonth();
+    }
+
     let penalty = 0;
 
-    if (ride.driverOnTheWay === true) {
+    if (ride.driverOnTheWay === true && isBirthday === false) {
       penalty = 5;
     }
 
