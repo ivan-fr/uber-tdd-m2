@@ -80,6 +80,17 @@ describe("Scanner les adresses avec Google Maps", () => {
     expect(() => new GoogleMapsScanner(" ")).toThrow("Cle Google Maps manquante");
   });
 
+  it("accepte aussi une ville retournee comme postal_town", async () => {
+    vi.spyOn(Client.prototype, "geocode").mockResolvedValue({
+      data: {
+        status: Status.OK,
+        results: [{ address_components: [{ long_name: "London", short_name: "London", types: [AddressType.postal_town] }] }],
+      },
+    } as GeocodeResponse);
+
+    expect(await new GoogleMapsScanner("test-key").getCity("10 Downing Street, London")).toBe("London");
+  });
+
   it.each([
     [" ", "Paris"],
     ["Paris", ""],
