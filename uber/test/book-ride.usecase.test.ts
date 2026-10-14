@@ -43,4 +43,15 @@ describe("Reserver une course", () => {
     expect(ride.price).toBe(7);
     expect(usecase.rides).toEqual([ride]);
   });
+
+  it("refuse une deuxieme reservation tant que le Driver n'est pas assigne", () => {
+    const usecase = new BookRideUsecase();
+    const rider = { id: "alice", balance: 20 };
+    const firstRide = usecase.handle(rider, "Paris", "Paris", 10);
+
+    expect(() => usecase.handle(rider, "Paris", "Lyon", 10)).toThrow(
+      "Une reservation attend deja un Driver",
+    );
+    expect(usecase.rides).toEqual([firstRide]);
+  });
 });
