@@ -20,6 +20,15 @@ describe("Reserver une course avec deux adresses", () => {
     expect(ride.price).toBe(5);
   });
 
+  it("ne sauvegarde rien quand Google ne trouve pas le trajet", async () => {
+    const rider = { id: "alice", balance: 20 };
+    scanner.error = new Error("Trajet introuvable");
+
+    await expect(usecase.handleFromAddresses(rider, from, to, scanner, false, today)).rejects.toThrow("Trajet introuvable");
+    expect(repository.rides).toEqual([]);
+    expect(repository.riders).toEqual([]);
+  });
+
   beforeEach(() => {
     repository = new FakeUberRepository();
     scanner = new StubRouteScanner();
