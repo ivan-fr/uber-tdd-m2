@@ -29,6 +29,13 @@ describe("Reserver une course avec deux adresses", () => {
     expect(repository.riders).toEqual([]);
   });
 
+  it("refuse une course scannee si les fonds sont insuffisants", async () => {
+    const rider = { id: "alice", balance: 6 };
+
+    await expect(usecase.handleFromAddresses(rider, from, to, scanner, false, today)).rejects.toThrow("Fonds insuffisants");
+    expect(repository.rides).toEqual([]);
+  });
+
   beforeEach(() => {
     repository = new FakeUberRepository();
     scanner = new StubRouteScanner();
