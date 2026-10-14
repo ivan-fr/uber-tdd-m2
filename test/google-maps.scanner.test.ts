@@ -75,4 +75,8 @@ describe("Scanner les adresses avec Google Maps", () => {
     expect(getCity).toHaveBeenNthCalledWith(2, "1 place d'Armes, Versailles");
     expect(getDistance).toHaveBeenCalledWith("10 rue de Rivoli, Paris", "1 place d'Armes, Versailles");
   });
+
+  it("refuse une cle API vide", () => {
+    expect(() => new GoogleMapsScanner(" ")).toThrow("Cle Google Maps manquante");
+  });
 });
