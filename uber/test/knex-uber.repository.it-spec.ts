@@ -193,4 +193,22 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     expect(await newRepository.findRide(secondRide.id)).toEqual(secondRide);
     expect(await newRepository.findRidesByRider("alice")).toHaveLength(2);
   });
+
+  it("la date de naissance relue en base permet l'annulation offerte", async () => {
+    const rider = { id: "alice", balance: 20, birthDate: new Date(2000, 5, 14) };
+    const bookedRide = await new BookRideUsecase(repository).handle(rider, "Paris", "Paris", 10);
+    await repository.saveDriver({ id: "bob", name: "Bob" });
+    bookedRide.driverId = "bob";
+    bookedRide.driverOnTheWay = true;
+    await repository.saveRide(bookedRide);
+    const savedRider = await repository.findRider("alice");
+    const savedRide = await repository.findRide(bookedRide.id);
+    if (!savedRider || !savedRide) throw new Error("Donnees de test introuvables");
+
+    const penalty = await new CancelRideUsecase(repository).handle(savedRider, savedRide, new Date(2026, 5, 14));
+
+    expect(penalty).toBe(0);
+    expect((await repository.findRider("alice"))?.balance).toBe(20);
+    expect((await repository.findRide(bookedRide.id))?.cancelled).toBe(true);
+  });
 });
