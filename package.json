@@ -5,11 +5,11 @@
   "scripts": {
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "test:integration": "vitest run --config ./uber/test/vitest-integration.config.ts",
-    "test:integration:uber": "vitest run --config ./uber/test/vitest-integration.config.ts",
-    "db:start": "docker compose -p uber-tdd-m2 -f uber/infra/docker-compose.yml up -d --wait",
-    "db:stop": "docker compose -p uber-tdd-m2 -f uber/infra/docker-compose.yml down",
-    "knex": "knex --knexfile ./uber/infra/knexfile.cjs"
+    "test:integration": "vitest run --config ./test/vitest-integration.config.ts",
+    "test:integration:uber": "vitest run --config ./test/vitest-integration.config.ts",
+    "db:start": "docker compose -p uber-tdd-m2 -f infra/docker-compose.yml up -d --wait",
+    "db:stop": "docker compose -p uber-tdd-m2 -f infra/docker-compose.yml down",
+    "knex": "knex --knexfile ./infra/knexfile.cjs"
   },
   "license": "MIT",
   "private": true,

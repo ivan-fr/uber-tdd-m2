@@ -1,10 +1,10 @@
 # Projet Uber
 
-Le code du projet se trouve dans `uber/`.
+Le code du projet se trouve a la racine du depot.
 
-- `uber/app/` contient les objets et les regles de reservation et d'annulation.
-- `uber/infra/` contient le stockage Knex, les migrations et Docker Compose pour PostgreSQL.
-- `uber/test/` contient les tests unitaires et les tests d'integration.
+- `app/` contient les objets et les regles de reservation et d'annulation.
+- `infra/` contient le stockage Knex, les migrations et Docker Compose pour PostgreSQL.
+- `test/` contient les tests unitaires et les tests d'integration.
 
 Conserver un code simple et facile a comprendre.
 Utiliser `FakeUberRepository` dans les tests unitaires et PostgreSQL Docker dans les tests d'integration.

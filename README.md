@@ -1,6 +1,6 @@
 # Projet Uber : stories 1, 2 et 3
 
-Le code Uber se trouve dans `uber/`. La story 3 enregistre les passagers
+Le code Uber se trouve a la racine de ce depot. La story 3 enregistre les passagers
 (`riders`), les chauffeurs (`drivers`) et les courses (`rides`) dans PostgreSQL.
 
 ### Lancer PostgreSQL avec Docker
@@ -31,7 +31,7 @@ npm run knex migrate:make NOM_DE_LA_MIGRATION
 ### Lancer les tests
 
 ```bash
-npm test -- --run uber/test
+npm test -- --run test
 
 npm run test:integration:uber
 ```
@@ -41,10 +41,10 @@ puis le suppriment a la fin. Ils utilisent un port disponible automatiquement.
 
 ### Comprendre le code
 
-- `uber/app/models.ts` decrit les informations des passagers, chauffeurs et courses.
-- `uber/app/uber.repository.ts` liste les methodes pour sauvegarder et lire ces objets.
-- `uber/infra/knex-uber.repository.ts` execute ces methodes avec Knex et PostgreSQL.
-- `uber/test/fake-uber.repository.ts` utilise des tableaux pour les tests unitaires.
+- `app/models.ts` decrit les informations des passagers, chauffeurs et courses.
+- `app/uber.repository.ts` liste les methodes pour sauvegarder et lire ces objets.
+- `infra/knex-uber.repository.ts` execute ces methodes avec Knex et PostgreSQL.
+- `test/fake-uber.repository.ts` utilise des tableaux pour les tests unitaires.
 
 `BookRideUsecase` et `CancelRideUsecase` recoivent le repository dans leur
 constructeur. Avec `KnexUberRepository`, ils enregistrent leurs changements en base.

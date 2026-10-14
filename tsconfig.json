@@ -8,7 +8,9 @@
     "resolveJsonModule": true
   },
   "include": [
-    "uber/**/*.ts",
+    "app/**/*.ts",
+    "infra/**/*.ts",
+    "test/**/*.ts",
     "vitest.config.ts"
   ]
 }
