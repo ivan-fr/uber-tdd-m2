@@ -36,6 +36,6 @@ export class CalculateRidePriceUsecase {
       price = price * 2;
     }
 
-    return price;
+    return Math.round(price * 100) / 100;
   }
 }
