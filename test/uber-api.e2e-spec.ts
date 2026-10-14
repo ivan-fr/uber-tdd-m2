@@ -59,4 +59,18 @@ describe("API Uber avec PostgreSQL", () => {
     expect(scanner.lastAddresses).toEqual({ from: booking.from, to: booking.to });
     expect(await repository.findRide(ride.id)).toEqual(ride);
   });
+
+  it("POST /rides/:id/cancel annule la course et sauvegarde la penalite", async () => {
+    const bookingResponse = await post("/rides", booking);
+    const ride = await bookingResponse.json();
+    await repository.saveDriver({ id: "bob", name: "Bob" });
+    await repository.saveRide({ ...ride, driverId: "bob", driverOnTheWay: true });
+
+    const response = await post(`/rides/${ride.id}/cancel`, { riderId: "alice" });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ penalty: 5 });
+    expect((await repository.findRide(ride.id))?.cancelled).toBe(true);
+    expect((await repository.findRider("alice"))?.balance).toBe(45);
+  });
 });
