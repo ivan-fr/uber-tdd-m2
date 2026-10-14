@@ -150,4 +150,11 @@ describe("Stocker les donnees Uber dans PostgreSQL", () => {
     expect(savedRider?.balance).toBe(15);
     expect(await database("rides").select()).toHaveLength(1);
   });
+
+  it("les recherches retournent undefined ou un tableau vide si rien n'existe", async () => {
+    expect(await repository.findRider("inconnu")).toBeUndefined();
+    expect(await repository.findDriver("inconnu")).toBeUndefined();
+    expect(await repository.findRide("00000000-0000-4000-8000-000000000099")).toBeUndefined();
+    expect(await repository.findRidesByRider("inconnu")).toEqual([]);
+  });
 });
