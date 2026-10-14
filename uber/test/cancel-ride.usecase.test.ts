@@ -107,4 +107,17 @@ describe("Annuler une course", () => {
     );
     expect(rider.balance).toBe(20);
   });
+
+  it("un autre Rider ne peut pas annuler la course d'Alice", () => {
+    const chloe = { id: "chloe", balance: 20 };
+    ride.driverId = "bob";
+    ride.driverOnTheWay = true;
+
+    expect(() => usecase.handle(chloe, ride, today)).toThrow(
+      "Cette course appartient a un autre Rider",
+    );
+    expect(ride.cancelled).toBe(false);
+    expect(rider.balance).toBe(20);
+    expect(chloe.balance).toBe(20);
+  });
 });
