@@ -11,6 +11,12 @@ describe("Historique des courses d'un Rider", () => {
     repository = new FakeUberRepository();
   });
 
+  it("retourne un historique vide quand le Rider n'a aucune course", async () => {
+    const history = await new ListRiderRideHistoryUsecase(repository).handle("alice");
+
+    expect(history).toEqual([]);
+  });
+
   it("liste toutes les courses avec le Driver associe", async () => {
     const rider = { id: "alice", balance: 40 };
     const bob = { id: "bob", name: "Bob" };
