@@ -22,4 +22,15 @@ describe("Reserver une course", () => {
     });
     expect(usecase.rides).toEqual([ride]);
   });
+
+  it("refuse la reservation quand le Rider n'a pas assez d'argent", () => {
+    const usecase = new BookRideUsecase();
+    const rider = { id: "alice", balance: 6 };
+
+    // La course coute 7 euros, mais Alice n'a que 6 euros.
+    expect(() => usecase.handle(rider, "Paris", "Paris", 10)).toThrow(
+      "Fonds insuffisants",
+    );
+    expect(usecase.rides).toEqual([]);
+  });
 });
