@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BookRideUsecase } from "../app/book-ride.usecase";
+import { CancelRideUsecase } from "../app/cancel-ride.usecase";
 
 describe("Reserver une course", () => {
   it("cree une reservation quand le Rider a assez d'argent", () => {
@@ -60,8 +61,7 @@ describe("Reserver une course", () => {
     const usecase = new BookRideUsecase();
     const rider = { id: "alice", balance: 20 };
     const firstRide = usecase.handle(rider, "Paris", "Paris", 10);
-    // On prepare une course deja annulee. Les regles d'annulation sont en story 2.
-    firstRide.cancelled = true;
+    new CancelRideUsecase().handle(rider, firstRide, new Date(2026, 5, 14));
 
     const secondRide = usecase.handle(rider, "Paris", "Lyon", 10);
 
