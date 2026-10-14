@@ -18,6 +18,7 @@ describe("Reserver une course", () => {
       distanceKm: 10,
       price: 7,
       driverId: null,
+      driverOnTheWay: false,
       cancelled: false,
     });
     expect(usecase.rides).toEqual([ride]);
